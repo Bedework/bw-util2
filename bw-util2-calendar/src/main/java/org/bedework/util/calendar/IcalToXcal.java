@@ -68,6 +68,7 @@ import ietf.params.xml.ns.icalendar_2.PercentCompletePropType;
 import ietf.params.xml.ns.icalendar_2.PeriodType;
 import ietf.params.xml.ns.icalendar_2.PriorityPropType;
 import ietf.params.xml.ns.icalendar_2.ProdidPropType;
+import ietf.params.xml.ns.icalendar_2.RdatePropType;
 import ietf.params.xml.ns.icalendar_2.RecurType;
 import ietf.params.xml.ns.icalendar_2.RecurrenceIdPropType;
 import ietf.params.xml.ns.icalendar_2.RelatedParamType;
@@ -578,8 +579,10 @@ public class IcalToXcal {
 
       case RDATE:
         /* ------------------- RDate ------------------- */
-        // XXX Todo
-        return null;
+
+        RdatePropType rdate = (RdatePropType)makeDateDatetime(new RdatePropType(),
+                                                                  prop);
+        return of.createRdate(rdate);
 
       case RECURRENCE_ID:
         /* ------------------- RecurrenceID -------------------- */
