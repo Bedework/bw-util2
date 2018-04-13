@@ -1377,6 +1377,11 @@ public class PropertyIndex implements Serializable {
               null,
               IS_SINGLE, allComponents),
 
+    /** Freeform tag */
+    TAG(BedeworkServerTags.xprop,
+              null,
+              IS_MULTI, allComponents),
+
     /** link to some related resource */
     URI(BedeworkServerTags.xprop,
         null,
