@@ -1467,6 +1467,10 @@ public class PropertyIndex implements Serializable {
     LOC_KEYS_FLD(BedeworkServerTags.xprop,
                  null,
                  IS_SINGLE, allComponents),
+
+    LOC_ALL(BedeworkServerTags.xprop,
+            null,
+            IS_SINGLE, allComponents),
     ;
 
     private final QName qname;
