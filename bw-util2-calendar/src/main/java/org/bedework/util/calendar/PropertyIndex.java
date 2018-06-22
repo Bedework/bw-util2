@@ -1406,6 +1406,10 @@ public class PropertyIndex implements Serializable {
           null,
           IS_SINGLE, allComponents),
 
+    CONTACT_ALL(BedeworkServerTags.xprop,
+                null,
+                IS_SINGLE, allComponents),
+
     /** ------------------------ locations ----------- */
 
     ADDRESS(BedeworkServerTags.xprop,
