@@ -1244,9 +1244,9 @@ public class PropertyIndex implements Serializable {
                         IS_SINGLE, allComponents),
 
     /** location uid - saved in the index */
-    LOCATION_UID(BedeworkServerTags.xprop,
-                 null,
-                 IS_SINGLE, event_Todo),
+    LOCATION_HREF(BedeworkServerTags.xprop,
+                  null,
+                  IS_SINGLE, event_Todo),
 
     /** location string value for the indexer */
     LOCATION_STR(BedeworkServerTags.xprop,
