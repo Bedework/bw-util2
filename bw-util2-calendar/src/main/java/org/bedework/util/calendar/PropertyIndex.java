@@ -1010,6 +1010,13 @@ public class PropertyIndex implements Serializable {
          NOT_PARAM, IS_IMMUTABLE),
 
     /** non ical */
+    LASTMODSEQ(BedeworkServerTags.xprop,
+         null,
+         DataType.TEXT,
+         IS_SINGLE, noComponent,
+         NOT_PARAM, IS_IMMUTABLE),
+
+    /** non ical */
     ENTITY_TYPE(BedeworkServerTags.entityType,
                 null,
                 DataType.INTEGER,
