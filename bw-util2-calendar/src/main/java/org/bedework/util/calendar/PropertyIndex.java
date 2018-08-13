@@ -1037,12 +1037,17 @@ public class PropertyIndex implements Serializable {
           IS_SINGLE, event_Todo_Journal,
           NOT_PARAM, IS_IMMUTABLE),
 
+    /** non ical */
+    TOMBSTONED(BedeworkServerTags.tombstoned,
+            null,
+            IS_SINGLE, notAlarm),
+
     /** treat VALARM sub-component as a property */
     VALARM(XcalTags.valarm,
            ValarmType.class,
            IS_MULTI, notAlarm),
 
-    /** ----------------------------- Following are parameters ----------- */
+    /* ----------------------------- Following are parameters ----------- */
 
     /** */
     LANG(BedeworkServerTags.language,
@@ -1064,7 +1069,7 @@ public class PropertyIndex implements Serializable {
             DataType.TEXT, IS_SINGLE, noComponent,
             IS_PARAM, NOT_IMMUTABLE),
 
-    /** ----------------------------- X-properties in schema ----------- */
+    /* ----------------------------- X-properties in schema ----------- */
 
     /** Cost */
     XBEDEWORK_COST(XcalTags.xBedeworkCost,
