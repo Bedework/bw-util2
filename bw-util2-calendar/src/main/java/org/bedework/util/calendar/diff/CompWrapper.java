@@ -44,7 +44,7 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
   private PropsWrapper props;
   private CompsWrapper comps;
 
-  private Integer kind;
+  private int kind;
 
   CompWrapper(final CompsWrapper parent,
               final QName name,
@@ -174,7 +174,7 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
 
     CompWrapper that = (CompWrapper)val;
 
-    if (!kind.equals(that.kind)) {
+    if (kind != that.kind) {
       return false;
     }
 
@@ -367,9 +367,12 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
      * For Alarms we order by time.
      */
 
-    res = kind.compareTo(o.kind);
-    if (res != 0) {
-      return res;
+    if (kind > o.kind) {
+      return 1;
+    }
+
+    if (kind < o.kind) {
+      return -1;
     }
 
     if ((kind == XcalUtil.OuterKind) ||
