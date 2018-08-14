@@ -56,7 +56,7 @@ public class XmlIcalCompare extends Logged {
   public static final List<Object> defaultSkipList;
 
   static {
-    defaultSkipList = new ArrayList<Object>();
+    defaultSkipList = new ArrayList<>();
 
     /* Calendar properties */
     defaultSkipList.add(new ProdidPropType());
@@ -98,11 +98,11 @@ public class XmlIcalCompare extends Logged {
    * <p>Populate the list with empty icalendar objects.
    *
    * @param skippedEntities Objects of the class that should be skipped
-   * @param tzs
+   * @param tzs for fetching timezones
    */
-  public XmlIcalCompare(final List<? extends Object> skippedEntities,
+  public XmlIcalCompare(final List<?> skippedEntities,
                         final TzGetter tzs) {
-    globals = new Globals(new HashMap<String, Object>(),
+    globals = new Globals(new HashMap<>(),
                           new ObjectFactory(),
                           new ValueMatcher(),
                           tzs);
@@ -114,9 +114,9 @@ public class XmlIcalCompare extends Logged {
 
   /** Compare the parameters. Return null for equal or a select element.
    *
-   * @param newval
-   * @param oldval
-   * @return SelectElementType if val1 and val2 differ else null.
+   * @param newval possible new state
+   * @param oldval the current state
+   * @return SelectElementType if newval and oldval differ else null.
    */
   public ComponentSelectionType diff(final IcalendarType newval,
                                      final IcalendarType oldval) {

@@ -42,7 +42,7 @@ class PropWrapper extends BaseEntityWrapper<PropWrapper,
                                             PropsWrapper,
                                             BasePropertyType>
             implements Comparable<PropWrapper> {
-  private ParamsWrapper params;
+  ParamsWrapper params;
 
   private ValueComparator comparator;
 

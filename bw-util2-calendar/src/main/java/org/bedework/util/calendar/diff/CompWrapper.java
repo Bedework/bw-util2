@@ -113,7 +113,7 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
 
       copy.setProperties(new ArrayOfProperties());
 
-      r.setBaseComponent(new JAXBElement<BaseComponentType>(getName(),
+      r.setBaseComponent(new JAXBElement<>(getName(),
           (Class<BaseComponentType>)copy.getClass(),
           copy));
 
@@ -267,6 +267,7 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
       PropertiesSelectionType psel = props.diff(that.props);
 
       if (psel != null) {
+        //noinspection ConstantConditions
         sel = that.getSelect(sel);
 
         sel.setProperties(psel);
@@ -293,7 +294,7 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
 
     /* Only want the outer element for this class */
     BaseComponentType bct = new VcalendarType();
-    return new JAXBElement<BaseComponentType>(getName(),
+    return new JAXBElement<>(getName(),
         (Class<BaseComponentType>)bct.getClass(),
                                     bct);
   }

@@ -20,6 +20,8 @@ package org.bedework.util.calendar.diff;
 
 import org.bedework.util.misc.Util;
 
+import ietf.params.xml.ns.icalendar_2.TextParameterType;
+
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
@@ -88,6 +90,15 @@ abstract class BaseEntityWrapper<T extends BaseEntityWrapper,
    */
   abstract boolean sameEntity(BaseEntityWrapper val);
 
+  public final static QName XBedeworkWrapperQNAME =
+          new QName("urn:ietf:params:xml:ns:icalendar-2.0",
+                    "x-bedework-wrapper");
+
+  public final static QName XBedeworkWrappedNameQNAME =
+          new QName("urn:ietf:params:xml:ns:icalendar-2.0",
+                    "x-bedework-wrapped-name");
+
+
   public int compareNames(final BaseEntityWrapper that) {
     QName thatN = that.getMappedName();
 
@@ -96,7 +107,38 @@ abstract class BaseEntityWrapper<T extends BaseEntityWrapper,
       return res;
     }
 
-    return getMappedName().getLocalPart().compareTo(thatN.getLocalPart());
+    res = getMappedName().getLocalPart().compareTo(thatN.getLocalPart());
+    if (res != 0) {
+      return res;
+    }
+
+    if (!getMappedName().equals(XBedeworkWrapperQNAME)) {
+      return 0;
+    }
+
+    // Name is in the params
+
+    final PropWrapper thatProp = (PropWrapper)that;
+    final PropWrapper thisProp = (PropWrapper)this;
+
+    String thatname = null;
+    String thisname = null;
+
+    for (final ParamWrapper prop: thatProp.params.getEls()) {
+      if (prop.getMappedName().equals(XBedeworkWrappedNameQNAME)) {
+        thatname = ((TextParameterType)prop.getEntity()).getText();
+        break;
+      }
+    }
+
+    for (final ParamWrapper prop: thisProp.params.getEls()) {
+      if (prop.getMappedName().equals(XBedeworkWrappedNameQNAME)) {
+        thisname = ((TextParameterType)prop.getEntity()).getText();
+        break;
+      }
+    }
+
+    return Util.compareStrings(thisname, thatname);
   }
 
   public int compareNameClass(final BaseEntityWrapper that) {

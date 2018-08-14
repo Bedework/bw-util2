@@ -77,7 +77,7 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
       return null;
     }
 
-    Set<PropWrapper> res = new TreeSet<PropWrapper>();
+    Set<PropWrapper> res = new TreeSet<>();
     List<BasePropertyType> normed = globals.matcher.getNormalized(el.getValue());
 
     for (BasePropertyType bp: normed) {

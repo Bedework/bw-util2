@@ -63,6 +63,9 @@ public class XcalUtil {
   static Map<Class, QName> compNames = new HashMap<Class, QName>();
 
   /** */
+  public static final Integer UnknownKind = -1;
+
+  /** */
   public static final Integer OuterKind = 0;
   /** */
   public static final Integer RecurringKind = 1;
