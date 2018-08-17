@@ -19,6 +19,7 @@
 package org.bedework.util.calendar.diff;
 
 import org.bedework.util.calendar.diff.XmlIcalCompare.Globals;
+import org.bedework.util.misc.Logged;
 import org.bedework.util.xml.NsContext;
 
 import javax.xml.namespace.QName;
@@ -29,7 +30,8 @@ import javax.xml.namespace.QName;
  *
  * @param <ParentT>
  */
-abstract class BaseWrapper<ParentT extends BaseWrapper> {
+abstract class BaseWrapper<ParentT extends BaseWrapper>
+        extends Logged {
   /* Set of entities we skip during comparison.
    */
   protected Globals globals;
@@ -81,8 +83,8 @@ abstract class BaseWrapper<ParentT extends BaseWrapper> {
    * <p>appendXPathPredicate may need to be called to add predicates to select a
    * unique instance from a number of nodes.
    *
-   * @param sb
-   * @param nsContext
+   * @param sb the builder
+   * @param nsContext the context
    */
   void appendXpathElement(final StringBuilder sb,
                           final NsContext nsContext) {

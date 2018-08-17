@@ -143,9 +143,121 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
          * extra multivalued value has been inserted or one deleted.
          *
          * We should check further down both sides.
+         *
+         * There are a number of possibilities - looking at the values only:
+         *
+         * 1. changed
+         * new  old
+         * a    b
+         *
+         * 2. changed
+         * a    b
+         * c    c
+         *
+         * 3. added
+         * a    b
+         * b
+         *
+         * 4. removed
+         * b    a
+         *      b
+         *
+         * 5. Multiple changes
+         * a    b
+         * c    d
+         * e    e
+         *
+         * So the process is
+         *  1. Try to find a match for the new value.
+         *
+         *  2. If we do then we have case 4 - remove value advance old
+         *
+         *  3. Try to find a match for the old value
+         *
+         *  4. If we do then we have case 3 - add value advance new
+         *
+         *  5. else we have a changed property - diff and advance both
          */
 
-        // For the moment just create a diff
+        //NOTE: because the values are ordered we can probably terminate early
+
+
+        // We known the 2 current values don't match. Try this one with the next old
+        int nextThatI = thatI + 1;
+        boolean matchFound = false;
+
+        if (debug) {
+          if (thatOne.getMappedName().equals(PropWrapper.XBedeworkWrapperQNAME)) {
+            debug("At wrapped x-prop");
+          }
+        }
+
+        //try to match new to remaining old
+
+        while (nextThatI < that.size()) {
+          PropWrapper nextThatOne = that.getTarray()[nextThatI];
+
+          if (thisOne.compareNames(nextThatOne) != 0) {
+            // Into the next property
+            break;
+          }
+
+          if (thisOne.equals(nextThatOne)) {
+            matchFound = true;
+            break;
+          }
+
+          nextThatI++;
+        }
+
+        if (matchFound) {
+          /*
+            nextThatI is positioned at the next matching property or off the end.
+            Remove the extras
+           */
+          while (thatI < nextThatI) {
+            thatOne = that.getTarray()[thatI];
+            sel = remove(sel, thatOne.makeRef());
+            thatI++;
+          }
+
+          continue;
+        }
+
+        //try to match old to remaining new
+        int nextThisI = thisI + 1;
+
+        while (nextThisI < this.size()) {
+          PropWrapper nextThisOne = getTarray()[nextThisI];
+
+          if (nextThisOne.compareNames(thatOne) != 0) {
+            // Into the next property
+            break;
+          }
+
+          if (nextThisOne.equals(thatOne)) {
+            matchFound = true;
+            break;
+          }
+
+          nextThisI++;
+        }
+
+        if (matchFound) {
+          /*
+            nextThisI is positioned at the next matching property or off the end.
+            Remove the extras
+           */
+          while (thisI < nextThisI) {
+            thisOne = getTarray()[thisI];
+            sel = remove(sel, thisOne.makeRef());
+            thisI++;
+          }
+
+          continue;
+        }
+
+        // No match found. Diff the current ones and move on
 
         sel = select(sel, thisOne.diff(thatOne));
         thisI++;
@@ -162,9 +274,13 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
     }
 
     while (thisI < size()) {
-      // Extra ones in the source
+      // Extra ones in the new object
 
       PropWrapper thisOne = getTarray()[thisI];
+
+      if (debug) {
+        debug("Adding "+ thisOne.getMappedName());
+      }
       sel = add(sel, thisOne.makeRef());
       thisI++;
     }
@@ -173,6 +289,11 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
       // Extra ones in the target
 
       PropWrapper thatOne = that.getTarray()[thatI];
+
+      if (debug) {
+        debug("Removing "+ thatOne.getMappedName());
+      }
+
       sel = remove(sel, thatOne.makeRef());
       thatI++;
     }
@@ -185,9 +306,7 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
       return val;
     }
 
-    PropertiesSelectionType sel = new PropertiesSelectionType();
-
-    return sel;
+    return new PropertiesSelectionType();
   }
 
   PropertiesSelectionType add(final PropertiesSelectionType sel,
@@ -218,7 +337,7 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
   }
 
   @Override
-  public int compareTo(final PropsWrapper that) {
+  public int compareTo(@SuppressWarnings("NullableProblems") final PropsWrapper that) {
     if (size() < that.size()) {
       return -1;
     }

@@ -49,7 +49,7 @@ class PropWrapper extends BaseEntityWrapper<PropWrapper,
   /* Key is the real name of the property - result is null for no mapping or a
    * QName we treat it as for comparison.
    */
-  private static Map<QName, QName> mappedNames = new HashMap<QName, QName>();
+  private static Map<QName, QName> mappedNames = new HashMap<>();
 
   static {
     final String ns = "urn:ietf:params:xml:ns:icalendar-2.0";
@@ -184,15 +184,17 @@ class PropWrapper extends BaseEntityWrapper<PropWrapper,
       return res;
     }
 
-    // Try params
+    // Try value
 
-    res = params.compareTo(o.params);
+    res = compareValue(o);
 
     if (res != 0) {
       return res;
     }
 
-    return res = compareValue(o);
+    // Try params
+
+    return params.compareTo(o.params);
   }
 
   @Override

@@ -94,23 +94,164 @@ class ParamsWrapper extends BaseSetWrapper<ParamWrapper, PropWrapper,
       int ncmp = thisOne.compareNames(thatOne);
 
       if (ncmp == 0) {
-        // Names match - it's a modify
+        /* names match - scan down that side to see if we can find a matching
+         * parameter. All the intermediate ones would then be marked for
+         * deletion.
+         *
+         * If that doesn't find a match, scan down this side to see if we can
+         * match thatOne. If we find a match the intermediate ones would then be
+         * marked for addition.
+         *
+         * We only need to scan so far. The items are all ordered so we should be
+         * able to do a simple comparison as an initial test.
+         *
+         * To complicate issues - we should diff the non-matching parameters to
+         * see if it's a value change.
+         *
+         * A value change is an update to the parameter.
+         */
+
+        if (((thisI + 1) == size()) &&
+                ((thatI + 1) == that.size())) {
+          // No more on this side and that side - call it an update
+          sel = select(sel, thisOne.diff(thatOne));
+          thisI++;
+          thatI++;
+          continue;
+        }
+
+        /* More on one or both sides. This allows the possibility that an
+         * extra multivalued value has been inserted or one deleted.
+         *
+         * We should check further down both sides.
+         *
+         * There are a number of possibilities - looking at the values only:
+         *
+         * 1. changed
+         * new  old
+         * a    b
+         *
+         * 2. changed
+         * a    b
+         * c    c
+         *
+         * 3. added
+         * a    b
+         * b
+         *
+         * 4. removed
+         * b    a
+         *      b
+         *
+         * 5. Multiple changes
+         * a    b
+         * c    d
+         * e    e
+         *
+         * So the process is
+         *  1. Try to find a match for the new value.
+         *
+         *  2. If we do then we have case 4 - remove value advance old
+         *
+         *  3. Try to find a match for the old value
+         *
+         *  4. If we do then we have case 3 - add value advance new
+         *
+         *  5. else we have a changed property - diff and advance both
+         */
+
+        //NOTE: because the values are ordered we can probably terminate early
+
+
+        // We known the 2 current values don't match. Try this one with the next old
+        int nextThatI = thatI + 1;
+        boolean matchFound = false;
+
+        if (debug) {
+          if (thatOne.getMappedName().equals(PropWrapper.XBedeworkWrapperQNAME)) {
+            debug("At wrapped x-prop");
+          }
+        }
+
+        //try to match new to remaining old
+
+        while (nextThatI < that.size()) {
+          ParamWrapper nextThatOne = that.getTarray()[nextThatI];
+
+          if (thisOne.compareNames(nextThatOne) != 0) {
+            // Into the next property
+            break;
+          }
+
+          if (thisOne.equals(nextThatOne)) {
+            matchFound = true;
+            break;
+          }
+
+          nextThatI++;
+        }
+
+        if (matchFound) {
+          /*
+            nextThatI is positioned at the next matching property or off the end.
+            Remove the extras
+           */
+          while (thatI < nextThatI) {
+            thatOne = that.getTarray()[thatI];
+            sel = remove(sel, thatOne.makeRef());
+            thatI++;
+          }
+
+          continue;
+        }
+
+        //try to match old to remaining new
+        int nextThisI = thisI + 1;
+
+        while (nextThisI < this.size()) {
+          ParamWrapper nextThisOne = getTarray()[nextThisI];
+
+          if (nextThisOne.compareNames(thatOne) != 0) {
+            // Into the next property
+            break;
+          }
+
+          if (nextThisOne.equals(thatOne)) {
+            matchFound = true;
+            break;
+          }
+
+          nextThisI++;
+        }
+
+        if (matchFound) {
+          /*
+            nextThisI is positioned at the next matching property or off the end.
+            Remove the extras
+           */
+          while (thisI < nextThisI) {
+            thisOne = getTarray()[thisI];
+            sel = remove(sel, thisOne.makeRef());
+            thisI++;
+          }
+
+          continue;
+        }
+
+        // No match found. Diff the current ones and move on
+
         sel = select(sel, thisOne.diff(thatOne));
         thisI++;
         thatI++;
-        continue;
-      }
-
-      if (ncmp < 0) {
+      } else if (ncmp < 0) {
         // in this but not that - addition
         sel = add(sel, thisOne.makeRef());
         thisI++;
-        continue;
+      } else {
+        // in that but not this - deletion
+        sel = remove(sel, thatOne.makeRef());
+        thatI++;
       }
-
-      // in that but not this - deletion
-      sel = remove(sel, thatOne.makeRef());
-      thatI++;
     }
 
     while (thisI < size()) {
@@ -137,9 +278,7 @@ class ParamsWrapper extends BaseSetWrapper<ParamWrapper, PropWrapper,
       return val;
     }
 
-    ParametersSelectionType sel = new ParametersSelectionType();
-
-    return sel;
+    return new ParametersSelectionType();
   }
 
   ParametersSelectionType add(final ParametersSelectionType sel,
