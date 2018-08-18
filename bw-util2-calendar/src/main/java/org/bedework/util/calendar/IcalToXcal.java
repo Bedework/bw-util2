@@ -334,7 +334,7 @@ public class IcalToXcal {
 
       wrapper.setText(prop.getValue());
 
-      processParameters(prop.getParameters(), wrapper);
+      //processParameters(prop.getParameters(), wrapper);
 
       final XBedeworkWrappedNameParamType wnp =
               new XBedeworkWrappedNameParamType();

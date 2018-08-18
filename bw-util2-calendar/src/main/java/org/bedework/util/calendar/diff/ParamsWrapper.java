@@ -227,11 +227,11 @@ class ParamsWrapper extends BaseSetWrapper<ParamWrapper, PropWrapper,
         if (matchFound) {
           /*
             nextThisI is positioned at the next matching property or off the end.
-            Remove the extras
+            Add the extras
            */
           while (thisI < nextThisI) {
             thisOne = getTarray()[thisI];
-            sel = remove(sel, thisOne.makeRef());
+            sel = add(sel, thisOne.makeRef());
             thisI++;
           }
 
