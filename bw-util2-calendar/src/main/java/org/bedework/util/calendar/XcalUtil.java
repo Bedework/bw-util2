@@ -297,7 +297,11 @@ public class XcalUtil {
       return val;
     }
 
-    StringBuilder sb = new StringBuilder();
+    if (val.length() < 8) {
+      throw new RuntimeException("Bad date: " + val);
+    }
+
+    final StringBuilder sb = new StringBuilder();
 
     sb.append(val.substring(0, 4));
     sb.append("-");
@@ -318,7 +322,7 @@ public class XcalUtil {
   }
 
   /**
-   * @param dt
+   * @param dt to reformat to ical format
    * @return rfc5545 date or date/time
    */
   public static String getIcalFormatDateTime(final XMLGregorianCalendar dt) {
@@ -330,7 +334,7 @@ public class XcalUtil {
   }
 
   /**
-   * @param dt
+   * @param dt to reformat to ical format
    * @return rfc5545 date or date/time
    */
   public static String getIcalFormatDateTime(final String dt) {
