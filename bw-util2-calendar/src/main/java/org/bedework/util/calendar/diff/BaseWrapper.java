@@ -19,7 +19,7 @@
 package org.bedework.util.calendar.diff;
 
 import org.bedework.util.calendar.diff.XmlIcalCompare.Globals;
-import org.bedework.util.misc.Logged;
+import org.bedework.util.logging.Logged;
 import org.bedework.util.xml.NsContext;
 
 import javax.xml.namespace.QName;
@@ -31,7 +31,7 @@ import javax.xml.namespace.QName;
  * @param <ParentT>
  */
 abstract class BaseWrapper<ParentT extends BaseWrapper>
-        extends Logged {
+        implements Logged {
   /* Set of entities we skip during comparison.
    */
   protected Globals globals;

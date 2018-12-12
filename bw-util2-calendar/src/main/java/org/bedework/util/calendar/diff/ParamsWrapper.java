@@ -167,7 +167,7 @@ class ParamsWrapper extends BaseSetWrapper<ParamWrapper, PropWrapper,
         int nextThatI = thatI + 1;
         boolean matchFound = false;
 
-        if (debug) {
+        if (debug()) {
           if (thatOne.getMappedName().equals(PropWrapper.XBedeworkWrapperQNAME)) {
             debug("At wrapped x-prop");
           }

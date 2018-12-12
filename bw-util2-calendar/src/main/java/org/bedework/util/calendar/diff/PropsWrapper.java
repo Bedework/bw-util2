@@ -186,7 +186,7 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
         int nextThatI = thatI + 1;
         boolean matchFound = false;
 
-        if (debug) {
+        if (debug()) {
           if (thatOne.getMappedName().equals(PropWrapper.XBedeworkWrapperQNAME)) {
             debug("At wrapped x-prop");
           }
@@ -278,7 +278,7 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
 
       PropWrapper thisOne = getTarray()[thisI];
 
-      if (debug) {
+      if (debug()) {
         debug("Adding "+ thisOne.getMappedName());
       }
       sel = add(sel, thisOne.makeRef());
@@ -290,7 +290,7 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
 
       PropWrapper thatOne = that.getTarray()[thatI];
 
-      if (debug) {
+      if (debug()) {
         debug("Removing "+ thatOne.getMappedName());
       }
 

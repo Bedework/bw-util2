@@ -15,7 +15,8 @@
     <maven.source.plugin.version>2.1.2</maven.source.plugin.version>
 
     <!-- Bedework Versions -->
-    <bw-util.version>4.0.19</bw-util.version>
+    <bw-util.version>4.0.20-SNAPSHOT</bw-util.version>
+    <bw-util-logging.version>4.0.0-SNAPSHOT</bw-util-logging.version>
     <bw-xml.version>4.0.6</bw-xml.version>
     <ical4j.groupId>org.bedework.ical4j</ical4j.groupId>
     <ical4j.artifactId>ical4j</ical4j.artifactId>
@@ -93,16 +94,25 @@
   <dependencyManagement>
     <dependencies>
       <!-- Bedework: Web Services -->
+
+      <dependency>
+        <groupId>org.bedework</groupId>
+        <artifactId>bw-util-logging</artifactId>
+        <version>${bw-util-logging.version}</version>
+      </dependency>
+
       <dependency>
         <groupId>org.bedework</groupId>
         <artifactId>bw-util-misc</artifactId>
         <version>${bw-util.version}</version>
       </dependency>
+
       <dependency>
         <groupId>org.bedework</groupId>
         <artifactId>bw-util-xml</artifactId>
         <version>${bw-util.version}</version>
       </dependency>
+
       <dependency>
         <groupId>org.bedework</groupId>
         <artifactId>bw-xml-calws-soap</artifactId>

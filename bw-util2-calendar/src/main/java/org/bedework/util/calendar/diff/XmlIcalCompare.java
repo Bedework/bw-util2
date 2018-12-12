@@ -19,7 +19,7 @@
 package org.bedework.util.calendar.diff;
 
 import org.bedework.util.calendar.XcalUtil.TzGetter;
-import org.bedework.util.misc.Logged;
+import org.bedework.util.logging.Logged;
 import org.bedework.util.xml.tagdefs.XcalTags;
 
 import ietf.params.xml.ns.icalendar_2.CreatedPropType;
@@ -51,7 +51,7 @@ import java.util.Map;
  *
  * @author Mike Douglass
  */
-public class XmlIcalCompare extends Logged {
+public class XmlIcalCompare implements Logged {
   /** */
   public static final List<Object> defaultSkipList;
 
