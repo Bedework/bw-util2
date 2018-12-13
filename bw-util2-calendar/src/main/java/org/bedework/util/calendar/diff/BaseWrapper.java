@@ -19,6 +19,7 @@
 package org.bedework.util.calendar.diff;
 
 import org.bedework.util.calendar.diff.XmlIcalCompare.Globals;
+import org.bedework.util.logging.BwLogger;
 import org.bedework.util.logging.Logged;
 import org.bedework.util.xml.NsContext;
 
@@ -94,5 +95,20 @@ abstract class BaseWrapper<ParentT extends BaseWrapper>
   protected void toStringSegment(final StringBuilder sb) {
     sb.append("name=");
     sb.append(name);
+  }
+
+  /* ====================================================================
+   *                   Logged methods
+   * ==================================================================== */
+
+  private BwLogger logger = new BwLogger();
+
+  @Override
+  public BwLogger getLogger() {
+    if ((logger.getLoggedClass() == null) && (logger.getLoggedName() == null)) {
+      logger.setLoggedClass(getClass());
+    }
+
+    return logger;
   }
 }
