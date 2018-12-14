@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.bedework</groupId>
   <artifactId>bw-util2</artifactId>
-  <version>4.0.2-SNAPSHOT</version>
+  <version>4.0.2</version>
   <packaging>pom</packaging>
   <name>bw-util2</name>
   <description>Utility classes and methods with dependencies</description>
@@ -50,7 +50,7 @@
     <connection>scm:git:git@github.com:Bedework/bw-util2.git</connection>
     <developerConnection>scm:git:git@github.com:Bedework/bw-util2.git</developerConnection>
     <url>https://github.com/Bedework/bw-util2</url>
-    <tag>bw-util2-4.0.0</tag>
+    <tag>bw-util2-4.0.2</tag>
   </scm>
 
   <issueManagement>
