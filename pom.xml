@@ -15,7 +15,7 @@
     <maven.source.plugin.version>2.1.2</maven.source.plugin.version>
 
     <!-- Bedework Versions -->
-    <bw-util.version>4.0.20</bw-util.version>
+    <bw-util.version>4.0.21-SNAPSHOT</bw-util.version>
     <bw-util-logging.version>4.0.0</bw-util-logging.version>
     <bw-xml.version>4.0.7</bw-xml.version>
 
@@ -119,6 +119,7 @@
         <artifactId>bw-xml-calws-soap</artifactId>
         <version>${bw-xml.version}</version>
       </dependency>
+
       <dependency>
         <groupId>org.bedework</groupId>
         <artifactId>bw-xml-tzsvr</artifactId>
