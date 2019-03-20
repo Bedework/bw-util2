@@ -19,7 +19,6 @@
 package org.bedework.util.calendar;
 
 import org.bedework.util.calendar.PropertyIndex.ComponentInfoIndex;
-import org.bedework.util.calendar.PropertyIndex.PropertyInfoIndex;
 
 import ietf.params.xml.ns.icalendar_2.ArrayOfComponents;
 import ietf.params.xml.ns.icalendar_2.ArrayOfParameters;
@@ -79,16 +78,16 @@ public class WsXMLTranslator {
   private final TimeZoneRegistry tzRegistry;
 
   /**
-   * @param tzRegistry
+   * @param tzRegistry for timezones
    */
   public WsXMLTranslator(final TimeZoneRegistry tzRegistry) {
     this.tzRegistry = tzRegistry;
   }
 
   /**
-   * @param ical
+   * @param ical xCal Icalendar object
    * @return Calendar object or null for no data
-   * @throws Throwable
+   * @throws Throwable on fatal error
    */
   public Calendar fromXcal(final IcalendarType ical) throws Throwable {
     BuildState bs = new BuildState(tzRegistry);
@@ -110,9 +109,9 @@ public class WsXMLTranslator {
   }
 
   /**
-   * @param comp
+   * @param comp xCal component
    * @return Calendar object or null for no data
-   * @throws Throwable
+   * @throws Throwable on fatal error
    */
   public Calendar fromXcomp(final JAXBElement<? extends BaseComponentType> comp) throws Throwable {
     IcalendarType ical = new IcalendarType();
@@ -187,9 +186,9 @@ public class WsXMLTranslator {
   private void processProperty(final BasePropertyType prop,
                                final QName elname,
                                final BuildState bs) throws Throwable {
+    /*
     final PropertyInfoIndex pii = PropertyInfoIndex.fromXmlClass(prop.getClass());
 
-    /*
     String name;
     if (pii == null) {
       name = elname.getLocalPart().toUpperCase();
@@ -237,7 +236,7 @@ public class WsXMLTranslator {
   }
 
   /**
-   * @param rp
+   * @param rp recurrence property
    * @return iCalendar recurrence rule value
    */
   public String fromRecurProperty(final RecurPropertyType rp) {
@@ -558,14 +557,14 @@ public class WsXMLTranslator {
   }
 
   /**
-   * @param t
+   * @param t Throwable
    */
   public static void error(final Throwable t) {
     getLog().error(WsXMLTranslator.class, t);
   }
 
   /**
-   * @param msg
+   * @param msg message
    */
   public static void warn(final String msg) {
     getLog().warn(msg);
