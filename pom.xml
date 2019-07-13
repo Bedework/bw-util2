@@ -29,6 +29,7 @@
     -->
     <ical4j-vcard.version>1.0.4</ical4j-vcard.version>
     <jackson.version>2.9.6</jackson.version>
+    <java.jaxb.api.version>2.3.0</java.jaxb.api.version>
     <log4j.version>1.2.15</log4j.version>
 
     <!-- Third Party Library Versions -->
@@ -125,16 +126,19 @@
         <artifactId>bw-xml-tzsvr</artifactId>
         <version>${bw-xml.version}</version>
       </dependency>
+
       <dependency>
         <groupId>org.bedework</groupId>
         <artifactId>bw-xml-icalendar</artifactId>
         <version>${bw-xml.version}</version>
       </dependency>
+
       <dependency>
         <groupId>${ical4j.groupId}</groupId>
         <artifactId>${ical4j.artifactId}</artifactId>
         <version>${ical4j.version}</version>
       </dependency>
+
       <dependency>
         <groupId>org.bedework</groupId>
         <artifactId>bw-ical4j-vcard</artifactId>
@@ -178,6 +182,12 @@
             <groupId>javax.jms</groupId>
           </exclusion>
         </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>javax.xml.bind</groupId>
+        <artifactId>jaxb-api</artifactId>
+        <version>${java.jaxb.api.version}</version>
       </dependency>
 
       <!-- Test Dependencies -->
