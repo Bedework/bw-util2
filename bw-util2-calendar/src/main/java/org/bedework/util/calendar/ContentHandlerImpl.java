@@ -34,14 +34,13 @@ import net.fortuna.ical4j.model.TimeZone;
 import net.fortuna.ical4j.model.component.Available;
 import net.fortuna.ical4j.model.component.CalendarComponent;
 import net.fortuna.ical4j.model.component.Observance;
+import net.fortuna.ical4j.model.component.Participant;
 import net.fortuna.ical4j.model.component.VAlarm;
 import net.fortuna.ical4j.model.component.VAvailability;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VPoll;
 import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.component.VToDo;
-import net.fortuna.ical4j.model.component.VVoter;
-import net.fortuna.ical4j.model.component.Vote;
 import net.fortuna.ical4j.model.parameter.TzId;
 import net.fortuna.ical4j.model.property.DateListProperty;
 import net.fortuna.ical4j.model.property.DateProperty;
@@ -102,13 +101,13 @@ public class ContentHandlerImpl implements ContentHandler {
         ((VToDo)parent).getAlarms().add((VAlarm) component);
       } else if (parent instanceof VAvailability) {
         ((VAvailability)parent).getAvailable().add((Available)component);
-      } else if (parent instanceof VVoter) {
-        ((VVoter) parent).getVotes().add((Vote) component);
+      } else if (parent instanceof Participant) {
+        ((Participant) parent).getComponents().add(component);
       } else if (parent instanceof VPoll) {
         if (component instanceof VAlarm) {
           ((VPoll)parent).getAlarms().add((VAlarm) component);
-        } else if (component instanceof VVoter) {
-          ((VPoll)parent).getVoters().add((VVoter) component);
+        } else if (component instanceof Participant) {
+          ((VPoll)parent).getVoters().add((Participant) component);
         } else {
           ((VPoll)parent).getCandidates().add(component);
         }

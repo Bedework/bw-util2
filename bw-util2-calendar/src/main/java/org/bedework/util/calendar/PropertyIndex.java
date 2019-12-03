@@ -947,10 +947,10 @@ public class PropertyIndex implements Serializable {
               null,
               IS_MULTI, vpollOnly),
 
-    /** vvoter component */
+    /** participant component embedded in vpoll */
     VVOTER(BedeworkServerTags.xprop,
-           null,
-           IS_MULTI, vpollOnly),
+          null,
+          IS_MULTI, vpollOnly),
 
     /** vote component */
     VOTE(BedeworkServerTags.xprop,
