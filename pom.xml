@@ -30,6 +30,7 @@
     <ical4j-vcard.version>1.0.4</ical4j-vcard.version>
     <jackson.version>2.10.0</jackson.version>
     <java.jaxb.api.version>2.3.0</java.jaxb.api.version>
+    <junit.version>4.8.2</junit.version>
     <log4j.version>1.2.15</log4j.version>
 
     <!-- Third Party Library Versions -->

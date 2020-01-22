@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeFactory;
@@ -333,18 +335,50 @@ public class XcalUtil {
     return getIcalFormatDateTime(dt.toXMLFormat());
   }
 
+  private  final static Pattern xmlDatePattern =
+          Pattern.compile(
+                  "(\\d\\d\\d\\d-\\d\\d-\\d\\d)" + // date
+                          "(T\\d\\d:\\d\\d:\\d\\dZ?)?" +  // [time]
+                          "(.*)");        // trailing junk
+
+  private  final static Pattern icalDatePattern =
+          Pattern.compile(
+                  "(\\d{8})" + // date
+                          "(T\\d{6}Z?)?" +  // [time]
+                          "(.*)");        // trailing junk
+
   /**
    * @param dt to reformat to ical format
-   * @return rfc5545 date or date/time
+   * @return rfc5545 date or date/time or null for none or invalid
    */
   public static String getIcalFormatDateTime(final String dt) {
     if (dt == null) {
       return null;
     }
 
-    if (dt.charAt(4) != '-') {
-      // Already Ical format
-      return dt;
+    if (dt.length() <= 16) {
+      final Matcher m = icalDatePattern.matcher(dt);
+      if (m.matches()) {
+        // Already ical?
+        final String g3 = m.group(3);
+
+        if ((g3 != null) && (g3.length() > 0)) {
+          return null; // trailing junk
+        }
+
+        return dt;
+      }
+    }
+
+    final Matcher m = xmlDatePattern.matcher(dt);
+    if (!m.matches()) {
+      return null;
+    }
+
+    final String g3 = m.group(3);
+
+    if ((g3 != null) && (g3.length() > 0)) {
+      return null; // trailing junk
     }
 
     StringBuilder sb = new StringBuilder();
