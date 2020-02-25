@@ -19,6 +19,7 @@
 package org.bedework.util.calendar;
 
 import org.bedework.util.calendar.PropertyIndex.ComponentInfoIndex;
+import org.bedework.util.logging.BwLogger;
 
 import ietf.params.xml.ns.icalendar_2.ArrayOfComponents;
 import ietf.params.xml.ns.icalendar_2.ArrayOfParameters;
@@ -57,7 +58,6 @@ import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Parameter;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.parameter.Value;
-import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -549,18 +549,27 @@ public class WsXMLTranslator {
                       Private methods
      ==================================================================== */
 
+  private static BwLogger logger;
+
   /**
    * @return Logger
    */
-  public static Logger getLog() {
-    return Logger.getLogger(WsXMLTranslator.class);
+  private static BwLogger getLog() {
+    if (logger != null) {
+      return logger;
+    }
+
+    logger = new BwLogger();
+    logger.setLoggedClass(WsXMLTranslator.class);
+
+    return logger;
   }
 
   /**
    * @param t Throwable
    */
   public static void error(final Throwable t) {
-    getLog().error(WsXMLTranslator.class, t);
+    getLog().error(t);
   }
 
   /**
