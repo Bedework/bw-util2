@@ -234,7 +234,7 @@ public class XmlCalendarBuilder {
       if (vcel != null) {
         throw new ParserException("Unexpected element: found " + vcel, 0);
       }
-    } catch (SAXException e) {
+    } catch (final RuntimeException e) {
       throw new ParserException(e.getMessage(), 0, e);
     }
   }
@@ -245,7 +245,7 @@ public class XmlCalendarBuilder {
       for (Element e: XmlUtil.getElements(el)) {
         processProperty(e, bs);
       }
-    } catch (SAXException e) {
+    } catch (final RuntimeException e) {
       throw new ParserException(e.getMessage(), 0, e);
     }
   }
@@ -267,7 +267,7 @@ public class XmlCalendarBuilder {
       for (Element e: XmlUtil.getElements(el)) {
         processComponent(e, bs);
       }
-    } catch (SAXException e) {
+    } catch (final RuntimeException e) {
       throw new ParserException(e.getMessage(), 0, e);
     }
   }
@@ -290,7 +290,7 @@ public class XmlCalendarBuilder {
       }
 
       bs.getContentHandler().endComponent(el.getLocalName().toUpperCase());
-    } catch (SAXException e) {
+    } catch (final RuntimeException e) {
       throw new ParserException(e.getMessage(), 0, e);
     }
   }
@@ -314,8 +314,6 @@ public class XmlCalendarBuilder {
       }
 
       bs.getContentHandler().endProperty(el.getLocalName());
-    } catch (SAXException e) {
-      throw new ParserException(e.getMessage(), 0, e);
     } catch (URISyntaxException e) {
       throw new ParserException(e.getMessage(), 0, e);
     }
@@ -378,13 +376,7 @@ public class XmlCalendarBuilder {
       }
 
       return false;
-    } catch (SAXException e) {
-      throw new ParserException(e.getMessage(), 0, e);
-    } catch (URISyntaxException e) {
-      throw new ParserException(e.getMessage(), 0, e);
-    } catch (ParseException e) {
-      throw new ParserException(e.getMessage(), 0, e);
-    } catch (IOException e) {
+    } catch (URISyntaxException | ParseException | IOException | RuntimeException e) {
       throw new ParserException(e.getMessage(), 0, e);
     }
   }
