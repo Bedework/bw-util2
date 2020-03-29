@@ -51,6 +51,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBElement;
+import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -62,7 +63,7 @@ import javax.xml.namespace.QName;
  */
 public class XcalUtil {
   private static final ObjectFactory icalOf = new ObjectFactory();
-  static Map<Class, QName> compNames = new HashMap<Class, QName>();
+  static Map<Class<?>, QName> compNames = new HashMap<>();
 
   /** */
   public static final Integer UnknownKind = -1;
@@ -82,7 +83,7 @@ public class XcalUtil {
   /** */
   public static final Integer TzStandard = 6;
 
-  static Map<QName, Integer> compKinds = new HashMap<QName, Integer>();
+  static Map<QName, Integer> compKinds = new HashMap<>();
 
   static {
     // Outer container
@@ -123,14 +124,14 @@ public class XcalUtil {
   }
 
   /** Initialize the DateDatetimeProperty
-   * @param dt
-   * @param dtval
-   * @param tzid
-   * @throws Throwable
+   * @param dt to be initialized
+   * @param dtval date string
+   * @param tzid timezone id
+   * @throws RuntimeException on bad date
    */
   public static void initDt(final DateDatetimePropertyType dt,
                             final String dtval,
-                            final String tzid) throws Throwable {
+                            final String tzid) {
     XMLGregorianCalendar xgc = fromDtval(dtval);
 
     if (dtval.length() == 8) {
@@ -160,12 +161,11 @@ public class XcalUtil {
   }
 
   /** Initialize the recur property
-   * @param dt
-   * @param dtval
-   * @throws Throwable
+   * @param dt to be initialized
+   * @param dtval to convert
    */
   public static void initUntilRecur(final UntilRecurType dt,
-                            final String dtval) throws Throwable {
+                                    final String dtval) {
     XMLGregorianCalendar xgc = fromDtval(dtval);
 
     if (dtval.length() == 8) {
@@ -177,34 +177,47 @@ public class XcalUtil {
   }
 
   /**
-   * @param dtval
+   * @param dtval to convert
    * @return XMLGregorianCalendar
-   * @throws Throwable
+   * @throws RuntimeException on bad date or new instance failure
    */
-  public static XMLGregorianCalendar fromDtval(final String dtval) throws Throwable {
-    DatatypeFactory dtf = DatatypeFactory.newInstance();
+  public static XMLGregorianCalendar fromDtval(final String dtval) {
+    final DatatypeFactory dtf;
+    try {
+      dtf = DatatypeFactory.newInstance();
+    } catch (DatatypeConfigurationException dce) {
+      throw new RuntimeException(dce);
+    }
 
     return dtf.newXMLGregorianCalendar(getXmlFormatDateTime(dtval));
   }
 
   /**
-   * @param dur
+   * @param dur string duration
    * @return Duration
-   * @throws Throwable
    */
-  public static Duration makeXmlDuration(final String dur) throws Throwable {
-    DatatypeFactory dtf = DatatypeFactory.newInstance();
+  public static Duration makeXmlDuration(final String dur) {
+    final DatatypeFactory dtf;
+    try {
+      dtf = DatatypeFactory.newInstance();
+    } catch (DatatypeConfigurationException dce) {
+      throw new RuntimeException(dce);
+    }
 
     return dtf.newDuration(dur);
   }
 
   /**
-   * @param dtval
+   * @param dtval to convert
    * @return utc
-   * @throws Throwable
    */
-  public static XMLGregorianCalendar getXMlUTCCal(final String dtval) throws Throwable {
-    DatatypeFactory dtf = DatatypeFactory.newInstance();
+  public static XMLGregorianCalendar getXMlUTCCal(final String dtval) {
+    final DatatypeFactory dtf;
+    try {
+      dtf = DatatypeFactory.newInstance();
+    } catch (DatatypeConfigurationException dce) {
+      throw new RuntimeException(dce);
+    }
 
     return dtf.newXMLGregorianCalendar(getXmlFormatDateTime(dtval));
   }
@@ -226,9 +239,9 @@ public class XcalUtil {
    */
   public interface TzGetter {
     /**
-     * @param id
+     * @param id of timezone
      * @return A timezone or null if non found
-     * @throws Throwable
+     * @throws Throwable on fatal error
      */
     TimeZone getTz(final String id) throws Throwable;
   }
@@ -236,33 +249,36 @@ public class XcalUtil {
   /** For date only values and floating convert to local UTC. For UTC just return
    * the value. For non-floating convert.
    *
-   * @param dt
-   * @param tzs
+   * @param dt to convert
+   * @param tzs tz getter
    * @return string UTC value
-   * @throws Throwable
    */
   public static String getUTC(final DateDatetimePropertyType dt,
-                              final TzGetter tzs) throws Throwable {
+                              final TzGetter tzs) {
     DtTzid dtz = getDtTzid(dt);
 
     if ((dtz.dt.length() == 18) && (dtz.dt.charAt(17) == 'Z')) {
       return dtz.dt;
     }
 
-    TimeZone tz = null;
-    if (dtz.tzid != null) {
-      tz = tzs.getTz(dtz.tzid);
+    try {
+      TimeZone tz = null;
+      if (dtz.tzid != null) {
+        tz = tzs.getTz(dtz.tzid);
+      }
+
+      DateTime dtim = new DateTime(dtz.dt, tz);
+
+      dtim.setUtc(true);
+
+      return dtim.toString();
+    } catch (final Throwable t) {
+      throw new RuntimeException(t);
     }
-
-    DateTime dtim = new DateTime(dtz.dt, tz);
-
-    dtim.setUtc(true);
-
-    return dtim.toString();
   }
 
   /**
-   * @param dt
+   * @param dt date time property
    * @return DtTzid filled in
    */
   public static DtTzid getDtTzid(final DateDatetimePropertyType dt) {
@@ -305,17 +321,17 @@ public class XcalUtil {
 
     final StringBuilder sb = new StringBuilder();
 
-    sb.append(val.substring(0, 4));
+    sb.append(val, 0, 4);
     sb.append("-");
-    sb.append(val.substring(4, 6));
+    sb.append(val, 4, 6);
     sb.append("-");
-    sb.append(val.substring(6, 8));
+    sb.append(val, 6, 8);
 
     if (val.length() > 8) {
       sb.append("T");
-      sb.append(val.substring(9, 11));
+      sb.append(val, 9, 11);
       sb.append(":");
-      sb.append(val.substring(11, 13));
+      sb.append(val, 11, 13);
       sb.append(":");
       sb.append(val.substring(13));
     }
@@ -383,15 +399,15 @@ public class XcalUtil {
 
     StringBuilder sb = new StringBuilder();
 
-    sb.append(dt.substring(0, 4));
-    sb.append(dt.substring(5, 7));
-    sb.append(dt.substring(8, 10));
+    sb.append(dt, 0, 4);
+    sb.append(dt, 5, 7);
+    sb.append(dt, 8, 10);
 
     if (dt.length() > 10) {
       sb.append("T");
-      sb.append(dt.substring(11, 13));
-      sb.append(dt.substring(14, 16));
-      sb.append(dt.substring(17, 19));
+      sb.append(dt, 11, 13);
+      sb.append(dt, 14, 16);
+      sb.append(dt, 17, 19);
 
       if (dt.endsWith("Z")) {
         sb.append("Z");
@@ -411,15 +427,11 @@ public class XcalUtil {
       return val;
     }
 
-    final StringBuilder sb = new StringBuilder();
-
-    sb.append(val.substring(0, 2));
-    sb.append(":");
-    sb.append(val.substring(2, 4));
-    sb.append(":");
-    sb.append(val.substring(4));
-
-    return sb.toString();
+    return val.substring(0, 2) +
+            ":" +
+            val.substring(2, 4) +
+            ":" +
+            val.substring(4);
   }
 
   /**
@@ -436,17 +448,13 @@ public class XcalUtil {
       return tm;
     }
 
-    StringBuilder sb = new StringBuilder();
-
-    sb.append(tm.substring(0, 2));
-    sb.append(tm.substring(3, 5));
-    sb.append(tm.substring(6));
-
-    return sb.toString();
+    return tm.substring(0, 2) +
+            tm.substring(3, 5) +
+            tm.substring(6);
   }
 
   /**
-   * @param tm
+   * @param tm date time value
    * @return rfc5545 time
    */
   public static String getIcalUtcOffset(final String tm) {
@@ -459,12 +467,8 @@ public class XcalUtil {
       return tm;
     }
 
-    StringBuilder sb = new StringBuilder();
-
-    sb.append(tm.substring(0, 3));
-    sb.append(tm.substring(4));
-
-    return sb.toString();
+    return tm.substring(0, 3) +
+            tm.substring(4);
   }
 
   /**
@@ -477,45 +481,51 @@ public class XcalUtil {
       return val;
     }
 
-    StringBuilder sb = new StringBuilder();
-
-    sb.append(val.substring(0, 3));
-    sb.append(":");
-    sb.append(val.substring(3));
-
-    return sb.toString();
+    return val.substring(0, 3) +
+            ":" +
+            val.substring(3);
   }
 
   /**
-   * @param comp
+   * @param val to clone
    * @return cloned empty component
-   * @throws Throwable for illegal access exception
+   * @throws RuntimeException for illegal access exception
    */
-  public static BaseComponentType cloneComponent(final BaseComponentType comp) throws Throwable {
-    return comp.getClass().newInstance();
+  public static BaseComponentType cloneComponent(final BaseComponentType val) {
+    try {
+      return val.getClass().newInstance();
+    } catch (final Throwable t) {
+      throw new RuntimeException(t);
+    }
   }
 
   /**
-   * @param prop
+   * @param val to clone
    * @return cloned empty property
-   * @throws Throwable for illegal access exception
    */
-  public static BasePropertyType cloneProperty(final BasePropertyType prop) throws Throwable {
-    return prop.getClass().newInstance();
+  public static BasePropertyType cloneProperty(final BasePropertyType val) {
+    try {
+      return val.getClass().newInstance();
+    } catch (final Throwable t) {
+      throw new RuntimeException(t);
+    }
   }
 
   /**
-   * @param param
+   * @param val to clone
    * @return cloned empty parameter
-   * @throws Throwable for illegal access exception
    */
-  public static BaseParameterType cloneProperty(final BaseParameterType param) throws Throwable {
-    return param.getClass().newInstance();
+  public static BaseParameterType cloneProperty(final BaseParameterType val) {
+    try {
+      return val.getClass().newInstance();
+    } catch (final Throwable t) {
+      throw new RuntimeException(t);
+    }
   }
 
   /**
-   * @param ical
-   * @param name
+   * @param ical Icalendar value
+   * @param name of component
    * @return null or first matching component
    */
   public static BaseComponentType findComponent(final IcalendarType ical,
@@ -536,7 +546,7 @@ public class XcalUtil {
 
   /** Get enclosed components for the supplied component.
    *
-   * @param c
+   * @param c component
    * @return list of components or null for none or unrecognized class.
    */
   public static List<JAXBElement<? extends BaseComponentType>> getComponents(final BaseComponentType c) {
@@ -544,13 +554,12 @@ public class XcalUtil {
       return null;
     }
 
-    return new ArrayList<JAXBElement<? extends BaseComponentType>>(
-        c.getComponents().getBaseComponent());
+    return new ArrayList<>(c.getComponents().getBaseComponent());
   }
 
   /**
-   * @param bcPar
-   * @param name
+   * @param bcPar component
+   * @param name to find
    * @return null or first matching component
    */
   public static BaseComponentType findComponent(final BaseComponentType bcPar,
@@ -575,7 +584,7 @@ public class XcalUtil {
   }
 
   /**
-   * @param ical
+   * @param ical entity
    * @return null or first contained entity
    */
   public static BaseComponentType findEntity(final IcalendarType ical) {
@@ -599,8 +608,8 @@ public class XcalUtil {
 
   /** Searches this entity for the named property. Does not recurse down.
    *
-   * @param bcPar
-   * @param name
+   * @param bcPar entity
+   * @param name to find
    * @return null or first matching property
    */
   public static BasePropertyType findProperty(final BaseComponentType bcPar,
@@ -625,8 +634,8 @@ public class XcalUtil {
 
   /** Searches the property for the named parameter.
    *
-   * @param prop
-   * @param name
+   * @param prop property
+   * @param name to find
    * @return null or first matching property
    */
   public static BaseParameterType findParam(final BasePropertyType prop,
@@ -650,22 +659,24 @@ public class XcalUtil {
   }
 
   /**
-   * @param cl
+   * @param cl class
    * @return QName for component
    */
-  public static QName getCompName(final Class cl) {
+  public static QName getCompName(final Class<?> cl) {
     return compNames.get(cl);
   }
 
   /**
-   * @param name
+   * @param name for component
    * @return component kind
    */
   public static int getCompKind(final QName name) {
     return compKinds.get(name);
   }
 
-  private static void addInfo(final QName nm, final Integer kind, final Class cl) {
+  private static void addInfo(final QName nm,
+                              final Integer kind,
+                              final Class<?> cl) {
     compNames.put(cl, nm);
     compKinds.put(nm, kind);
   }
