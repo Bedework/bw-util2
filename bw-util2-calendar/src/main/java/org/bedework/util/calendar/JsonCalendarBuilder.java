@@ -16,7 +16,7 @@
     specific language governing permissions and limitations
     under the License.
 */
-/**
+/*
  * Copyright (c) 2010, Ben Fortuna
  * All rights reserved.
  *
@@ -50,7 +50,6 @@
 package org.bedework.util.calendar;
 
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import net.fortuna.ical4j.data.ParserException;
@@ -71,6 +70,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 
 /**
@@ -84,14 +84,13 @@ import java.text.ParseException;
  *
  */
 public class JsonCalendarBuilder {
-  private static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
+  private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
   private final static JsonFactory jsonFactory;
 
   static {
     jsonFactory = new JsonFactory();
     jsonFactory.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
-    jsonFactory.configure(JsonGenerator.Feature.QUOTE_FIELD_NAMES, true);
     jsonFactory.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
   }
 
@@ -422,8 +421,7 @@ public class JsonCalendarBuilder {
       }
 
       if (type.equals("date") ||
-          type.equals("date-time") ||
-          type.equals("time")) {
+          type.equals("date-time")) {
         bs.getContentHandler().propertyValue(
                 XcalUtil.getIcalFormatDateTime(textField(parser)));
         return true;
