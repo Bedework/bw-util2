@@ -19,6 +19,7 @@
 package org.bedework.util.calendar.diff;
 
 import org.bedework.util.calendar.XcalUtil;
+import org.bedework.util.misc.ToString;
 import org.bedework.util.xml.tagdefs.XcalTags;
 
 import ietf.params.xml.ns.icalendar_2.ActionPropType;
@@ -42,9 +43,9 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
                                             CompsWrapper,
                                             BaseComponentType> implements Comparable<CompWrapper> {
   private PropsWrapper props;
-  private CompsWrapper comps;
+  private final CompsWrapper comps;
 
-  private int kind;
+  private final int kind;
 
   CompWrapper(final CompsWrapper parent,
               final QName name,
@@ -81,7 +82,7 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
 
   @SuppressWarnings("unchecked")
   ComponentReferenceType makeRef(final boolean forRemove) {
-    ComponentReferenceType r = new ComponentReferenceType();
+    final ComponentReferenceType r = new ComponentReferenceType();
 
     boolean wholeComponent = !forRemove;
 
@@ -106,10 +107,10 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
 
     // Just enough information to identify the entity, e.g. uid and recurrence-id
 
-    Class cl = getEntity().getClass();
+    final Class<?> cl = getEntity().getClass();
 
     try {
-      BaseComponentType copy = (BaseComponentType)cl.newInstance();
+      final BaseComponentType copy = (BaseComponentType)cl.newInstance();
 
       copy.setProperties(new ArrayOfProperties());
 
@@ -120,7 +121,7 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
       if ((kind == XcalUtil.TzDaylight) ||
           (kind == XcalUtil.TzStandard)) {
         // DTSTART is the identifier
-        PropWrapper dts = props.find(XcalTags.dtstart);
+        final PropWrapper dts = props.find(XcalTags.dtstart);
 
         if (dts == null) {
           throw new RuntimeException("No DTSTART for reference");
@@ -132,7 +133,7 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
 
       if (kind == XcalUtil.TzKind) {
         // TZid is the identifier
-        PropWrapper tzidw = props.find(XcalTags.tzid);
+        final PropWrapper tzidw = props.find(XcalTags.tzid);
 
         if (tzidw == null) {
           throw new RuntimeException("No tzid for reference");
@@ -142,7 +143,7 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
         return r;
       }
 
-      PropWrapper uidw = props.find(XcalTags.uid);
+      final PropWrapper uidw = props.find(XcalTags.uid);
 
       if (uidw == null) {
         throw new RuntimeException("No uid for reference");
@@ -154,25 +155,25 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
         return r;
       }
 
-      PropWrapper ridw = props.find(XcalTags.recurrenceId);
+      final PropWrapper ridw = props.find(XcalTags.recurrenceId);
       if (ridw != null) {
         copy.getProperties().getBasePropertyOrTzid().add(ridw.getJaxbElement());
       }
 
       return r;
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       throw new RuntimeException(t);
     }
   }
 
   @Override
-  boolean sameEntity(final BaseEntityWrapper val) {
-    int res = super.compareNameClass(val);
+  boolean sameEntity(final BaseEntityWrapper<?, ?, ?> val) {
+    final int res = super.compareNameClass(val);
     if (res != 0) {
       return false;
     }
 
-    CompWrapper that = (CompWrapper)val;
+    final CompWrapper that = (CompWrapper)val;
 
     if (kind != that.kind) {
       return false;
@@ -190,11 +191,13 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
     }
 
     if (kind == XcalUtil.AlarmKind) {
-      PropWrapper thatw = that.props.find(XcalTags.action);
-      PropWrapper thisw = props.find(XcalTags.action);
+      final PropWrapper thatw = that.props.find(XcalTags.action);
+      final PropWrapper thisw = props.find(XcalTags.action);
 
-      String thatAction = ((ActionPropType)thatw.getEntity()).getText();
-      String thisAction = ((ActionPropType)thisw.getEntity()).getText();
+      final String thatAction =
+              ((ActionPropType)thatw.getEntity()).getText();
+      final String thisAction =
+              ((ActionPropType)thisw.getEntity()).getText();
 
       if (!thatAction.equals(thisAction)) {
         return false;
@@ -204,11 +207,11 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
     }
 
     // Get uid and see if it matches.
-    PropWrapper thatUidw = that.props.find(XcalTags.uid);
-    PropWrapper thisUidw = props.find(XcalTags.uid);
+    final PropWrapper thatUidw = that.props.find(XcalTags.uid);
+    final PropWrapper thisUidw = props.find(XcalTags.uid);
 
-    String thatUid = ((UidPropType)thatUidw.getEntity()).getText();
-    String thisUid = ((UidPropType)thisUidw.getEntity()).getText();
+    final String thatUid = ((UidPropType)thatUidw.getEntity()).getText();
+    final String thisUid = ((UidPropType)thisUidw.getEntity()).getText();
 
     if (!thatUid.equals(thisUid)) {
       return false;
@@ -222,8 +225,8 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
   }
 
   private int cmpRids(final CompWrapper that) {
-    PropWrapper thatRidw = that.props.find(XcalTags.recurrenceId);
-    PropWrapper thisRidw = props.find(XcalTags.recurrenceId);
+    final PropWrapper thatRidw = that.props.find(XcalTags.recurrenceId);
+    final PropWrapper thisRidw = props.find(XcalTags.recurrenceId);
 
     if ((thisRidw == null) && (thatRidw == null)) {
       return 0;
@@ -264,7 +267,7 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
     ComponentSelectionType sel = null;
 
     if (props != null) {
-      PropertiesSelectionType psel = props.diff(that.props);
+      final PropertiesSelectionType psel = props.diff(that.props);
 
       if (psel != null) {
         //noinspection ConstantConditions
@@ -274,7 +277,7 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
       }
     }
 
-    ComponentsSelectionType csel = comps.diff(that.comps);
+    final ComponentsSelectionType csel = comps.diff(that.comps);
 
     if (csel != null) {
       sel = that.getSelect(sel);
@@ -293,7 +296,7 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
     }
 
     /* Only want the outer element for this class */
-    BaseComponentType bct = new VcalendarType();
+    final BaseComponentType bct = new VcalendarType();
     return new JAXBElement<>(getName(),
         (Class<BaseComponentType>)bct.getClass(),
                                     bct);
@@ -304,7 +307,7 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
       return val;
     }
 
-    ComponentSelectionType sel = new ComponentSelectionType();
+    final ComponentSelectionType sel = new ComponentSelectionType();
 
     sel.setBaseComponent(getJaxbElement());
 
@@ -317,12 +320,12 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
 
     /* Add extra information to identify the component */
 
-    BaseComponentType bct = sel.getBaseComponent().getValue();
-    ArrayOfProperties bprops = new ArrayOfProperties();
+    final BaseComponentType bct = sel.getBaseComponent().getValue();
+    final ArrayOfProperties bprops = new ArrayOfProperties();
     bct.setProperties(bprops);
 
     if (kind == XcalUtil.AlarmKind) {
-      PropWrapper pw = props.find(XcalTags.action);
+      final PropWrapper pw = props.find(XcalTags.action);
 
       bprops.getBasePropertyOrTzid().add(pw.getJaxbElement());
 
@@ -427,17 +430,14 @@ class CompWrapper extends BaseEntityWrapper<CompWrapper,
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("CompWrapper{");
+    final ToString ts = new ToString(this);
 
-    super.toStringSegment(sb);
+    super.toStringSegment(ts);
 
-    sb.append(", props=");
-    sb.append(props);
-    sb.append("\n, comps=");
-    sb.append(comps);
+    ts.append("props", props);
+    ts.newLine();
+    ts.append("comps", comps);
 
-    sb.append("}");
-
-    return sb.toString();
+    return ts.toString();
   }
 }

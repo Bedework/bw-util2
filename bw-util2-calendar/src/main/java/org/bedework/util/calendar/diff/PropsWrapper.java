@@ -407,14 +407,4 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
 
     return -1;
   }*/
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("PropsWrapper{");
-
-    super.toStringSegment(sb);
-    sb.append("}");
-
-    return sb.toString();
-  }
 }

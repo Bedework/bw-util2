@@ -90,13 +90,13 @@ static java.lang.String   VERSION</pre>
 public class ComponentWrapper {
 //  private Component comp;
 
-  private PropertyList pl;
+  private final PropertyList<Property> pl;
 
   /** Constructor
    *
    * @param comp  wrapped component
    */
-  public ComponentWrapper(Component comp) {
+  public ComponentWrapper(final Component comp) {
 //    this.comp = comp;
     pl = comp.getProperties();
   }
@@ -134,7 +134,7 @@ public class ComponentWrapper {
    * @return value
    */
   public Timestamp getDtend() {
-    Property prop = getProp(Property.DTEND);
+    final Property prop = getProp(Property.DTEND);
 
     if (prop == null) {
       return null;
@@ -194,13 +194,13 @@ public class ComponentWrapper {
    * @return value
    */
   public Integer getSequence() {
-    Property prop = getProp(Property.SEQUENCE);
+    final Property prop = getProp(Property.SEQUENCE);
 
     if (prop == null) {
       return null;
     }
 
-    return new Integer(((Sequence)prop).getSequenceNo());
+    return ((Sequence)prop).getSequenceNo();
   }
 
   /**
@@ -243,7 +243,7 @@ public class ComponentWrapper {
    *                   Private methods
    * ==================================================================== */
 
-  private Property getProp(String name) {
+  private Property getProp(final String name) {
     if (pl == null) {
       // Empty Component
       return null;
@@ -252,8 +252,8 @@ public class ComponentWrapper {
     return pl.getProperty(name);
   }
 
-  private String getPval(String name) {
-    Property prop = getProp(name);
+  private String getPval(final String name) {
+    final Property prop = getProp(name);
 
     if (prop == null) {
       return null;
@@ -263,7 +263,7 @@ public class ComponentWrapper {
   }
 
   /* Get a sql timestamp object from a date-time */
-  private Timestamp makeSqlTimestamp(java.util.Date dtTm) {
+  private Timestamp makeSqlTimestamp(final java.util.Date dtTm) {
     return new Timestamp(dtTm.getTime());
   }
 }

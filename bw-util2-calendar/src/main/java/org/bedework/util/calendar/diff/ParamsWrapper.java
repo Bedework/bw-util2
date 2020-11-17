@@ -58,7 +58,7 @@ class ParamsWrapper extends BaseSetWrapper<ParamWrapper, PropWrapper,
       return null;
     }
 
-    Set<ParamWrapper> res = new TreeSet<ParamWrapper>();
+    final Set<ParamWrapper> res = new TreeSet<>();
 
     res.add(new ParamWrapper(this, el.getName(), el.getValue()));
 
@@ -91,7 +91,7 @@ class ParamsWrapper extends BaseSetWrapper<ParamWrapper, PropWrapper,
        * parameter name. We can make use of that here
        */
 
-      int ncmp = thisOne.compareNames(thatOne);
+      final int ncmp = thisOne.compareNames(thatOne);
 
       if (ncmp == 0) {
         /* names match - scan down that side to see if we can find a matching
@@ -176,7 +176,7 @@ class ParamsWrapper extends BaseSetWrapper<ParamWrapper, PropWrapper,
         //try to match new to remaining old
 
         while (nextThatI < that.size()) {
-          ParamWrapper nextThatOne = that.getTarray()[nextThatI];
+          final ParamWrapper nextThatOne = that.getTarray()[nextThatI];
 
           if (thisOne.compareNames(nextThatOne) != 0) {
             // Into the next property
@@ -209,7 +209,7 @@ class ParamsWrapper extends BaseSetWrapper<ParamWrapper, PropWrapper,
         int nextThisI = thisI + 1;
 
         while (nextThisI < this.size()) {
-          ParamWrapper nextThisOne = getTarray()[nextThisI];
+          final ParamWrapper nextThisOne = getTarray()[nextThisI];
 
           if (nextThisOne.compareNames(thatOne) != 0) {
             // Into the next property
@@ -257,7 +257,7 @@ class ParamsWrapper extends BaseSetWrapper<ParamWrapper, PropWrapper,
     while (thisI < size()) {
       // Extra ones in the source
 
-      ParamWrapper thisOne = getTarray()[thisI];
+      final ParamWrapper thisOne = getTarray()[thisI];
       sel = add(sel, thisOne.makeRef());
       thisI++;
     }
@@ -265,7 +265,7 @@ class ParamsWrapper extends BaseSetWrapper<ParamWrapper, PropWrapper,
     while (thatI < that.size()) {
       // Extra ones in the target
 
-      ParamWrapper thatOne = that.getTarray()[thatI];
+      final ParamWrapper thatOne = that.getTarray()[thatI];
       sel = remove(sel, thatOne.makeRef());
       thatI++;
     }
@@ -283,7 +283,7 @@ class ParamsWrapper extends BaseSetWrapper<ParamWrapper, PropWrapper,
 
   ParametersSelectionType add(final ParametersSelectionType sel,
                               final ParameterReferenceType val) {
-    ParametersSelectionType csel = getSelect(sel);
+    final ParametersSelectionType csel = getSelect(sel);
 
     csel.getAdd().add(val);
 
@@ -292,7 +292,7 @@ class ParamsWrapper extends BaseSetWrapper<ParamWrapper, PropWrapper,
 
   ParametersSelectionType remove(final ParametersSelectionType sel,
                                  final ParameterReferenceType val) {
-    ParametersSelectionType csel = getSelect(sel);
+    final ParametersSelectionType csel = getSelect(sel);
 
     csel.getRemove().add(val);
 
@@ -301,7 +301,7 @@ class ParamsWrapper extends BaseSetWrapper<ParamWrapper, PropWrapper,
 
   ParametersSelectionType select(final ParametersSelectionType sel,
                                  final ParameterSelectionType val) {
-    ParametersSelectionType csel = getSelect(sel);
+    final ParametersSelectionType csel = getSelect(sel);
 
     csel.getParameter().add(val);
 
@@ -318,12 +318,12 @@ class ParamsWrapper extends BaseSetWrapper<ParamWrapper, PropWrapper,
       return 1;
     }
 
-    Iterator<ParamWrapper> it = that.getEls().iterator();
+    final Iterator<ParamWrapper> it = that.getEls().iterator();
 
-    for (ParamWrapper p: getEls()) {
-      ParamWrapper thatP = it.next();
+    for (final ParamWrapper p: getEls()) {
+      final ParamWrapper thatP = it.next();
 
-      int res = p.compareTo(thatP);
+      final int res = p.compareTo(thatP);
 
       if (res != 0) {
         return res;
@@ -331,15 +331,5 @@ class ParamsWrapper extends BaseSetWrapper<ParamWrapper, PropWrapper,
     }
 
     return 0;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("ParamsWrapper{");
-
-    super.toStringSegment(sb);
-    sb.append("}");
-
-    return sb.toString();
   }
 }

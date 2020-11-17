@@ -18,6 +18,7 @@
 */
 package org.bedework.util.calendar.diff;
 
+import org.bedework.util.misc.ToString;
 import org.bedework.util.misc.Util;
 
 import ietf.params.xml.ns.icalendar_2.TextParameterType;
@@ -88,7 +89,7 @@ abstract class BaseEntityWrapper<T extends BaseEntityWrapper,
    * @param val - the other wrapped entity
    * @return true if this represents the same (but possibly altered) entity.
    */
-  abstract boolean sameEntity(BaseEntityWrapper val);
+  abstract boolean sameEntity(BaseEntityWrapper<?, ?, ?> val);
 
   public final static QName XBedeworkWrapperQNAME =
           new QName("urn:ietf:params:xml:ns:icalendar-2.0",
@@ -99,7 +100,7 @@ abstract class BaseEntityWrapper<T extends BaseEntityWrapper,
                     "x-bedework-wrapped-name");
 
 
-  public int compareNames(final BaseEntityWrapper that) {
+  public int compareNames(final BaseEntityWrapper<?, ?, ?> that) {
     QName thatN = that.getMappedName();
 
     int res = getMappedName().getNamespaceURI().compareTo(thatN.getNamespaceURI());
@@ -141,7 +142,7 @@ abstract class BaseEntityWrapper<T extends BaseEntityWrapper,
     return Util.compareStrings(thisname, thatname);
   }
 
-  public int compareNameClass(final BaseEntityWrapper that) {
+  public int compareNameClass(final BaseEntityWrapper<?, ?, ?> that) {
     int res = compareNames(that);
     if (res != 0) {
       return res;
@@ -150,9 +151,9 @@ abstract class BaseEntityWrapper<T extends BaseEntityWrapper,
     return getEntity().getClass().getName().compareTo(that.getEntity().getClass().getName());
   }
 
-  public int compareTo(final BaseEntityWrapper o) {
-    int res = Util.compareStrings(getName().getLocalPart(),
-                                  o.getName().getLocalPart());
+  public int compareTo(final BaseEntityWrapper<?, ?, ?> o) {
+    final int res = Util.compareStrings(getName().getLocalPart(),
+                                        o.getName().getLocalPart());
 
     if (res != 0) {
       return res;
@@ -163,12 +164,11 @@ abstract class BaseEntityWrapper<T extends BaseEntityWrapper,
   }
 
   @Override
-  protected void toStringSegment(final StringBuilder sb) {
-    super.toStringSegment(sb);
+  protected void toStringSegment(final ToString ts) {
+    super.toStringSegment(ts);
 
     if (!mappedName.equals(getName())) {
-      sb.append(", mappedName=");
-      sb.append(mappedName);
+      ts.append("mappedName", mappedName);
     }
   }
 }

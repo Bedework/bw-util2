@@ -52,17 +52,9 @@ package org.bedework.util.calendar;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import net.fortuna.ical4j.data.CalendarParser;
+import net.fortuna.ical4j.data.ContentHandler;
 import net.fortuna.ical4j.data.ParserException;
-import net.fortuna.ical4j.model.Calendar;
-import net.fortuna.ical4j.model.CalendarException;
-import net.fortuna.ical4j.model.Parameter;
-import net.fortuna.ical4j.model.Property;
-import net.fortuna.ical4j.model.TimeZone;
-import net.fortuna.ical4j.model.TimeZoneRegistry;
-import net.fortuna.ical4j.model.property.DateListProperty;
-import net.fortuna.ical4j.model.property.DateProperty;
-import net.fortuna.ical4j.model.property.Geo;
-import net.fortuna.ical4j.model.property.RequestStatus;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -83,7 +75,7 @@ import java.text.ParseException;
  * Created: Sept 8, 2010
  *
  */
-public class JsonCalendarBuilder {
+public class JcalCalendarParser implements CalendarParser {
   private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
   private final static JsonFactory jsonFactory;
@@ -96,61 +88,33 @@ public class JsonCalendarBuilder {
 
   //private Logger log = Logger.getLogger(XmlCalendarBuilder.class);
 
-  private final TimeZoneRegistry tzRegistry;
-
   private String lastComponent;
   private String lastProperty;
 
-  /**
-   * @param tzRegistry a custom timezone registry
-   */
-  public JsonCalendarBuilder(final TimeZoneRegistry tzRegistry) {
-    this.tzRegistry = tzRegistry;
+  @Override
+  public void parse(final InputStream in,
+                    final ContentHandler handler)
+          throws ParserException {
+    parse(new InputStreamReader(in, DEFAULT_CHARSET),
+          handler);
   }
 
-  /**
-   * Builds an iCalendar model from the specified input stream.
-   * @param in an input stream to read calendar data from
-   * @return a calendar parsed from the specified input stream
-   * @throws java.io.IOException where an error occurs reading data from the specified stream
-   * @throws net.fortuna.ical4j.data.ParserException where an error occurs parsing data from the stream
-   */
-  public Calendar build(final InputStream in) throws IOException,
-          ParserException {
-    return build(new InputStreamReader(in, DEFAULT_CHARSET));
-  }
-
-  /**
-   * Build an iCalendar model by parsing data from the specified reader.
-   *
-   * @param in an unfolding reader to read data from
-   * @return a calendar parsed from the specified reader
-   * @throws java.io.IOException where an error occurs reading data from the specified reader
-   * @throws net.fortuna.ical4j.data.ParserException where an error occurs parsing data from the reader
-   */
-  public Calendar build(final Reader in)
-          throws IOException, ParserException {
-    BuildState bs = new BuildState(tzRegistry);
-
-    bs.setContentHandler(new ContentHandlerImpl(bs));
-
+  @Override
+  public void parse(final Reader in,
+                    final ContentHandler handler)
+          throws ParserException {
     try {
       final JsonParser parser = jsonFactory.createParser(in);
 
-      process(parser, bs);
-    } catch (Throwable t) {
+      process(parser, handler);
+    } catch (final Throwable t) {
       throw new ParserException(t.getMessage(), 0, t);
     }
-
-    if ((bs.getDatesMissingTimezones().size() > 0) && (tzRegistry != null)) {
-      resolveTimezones(bs);
-    }
-
-    return bs.getCalendars().iterator().next();
   }
 
   private void process(final JsonParser parser,
-                       final BuildState bs) throws ParserException {
+                       final ContentHandler handler)
+          throws ParserException {
     /* ["vcalendar",
           [ <properties> ],
           [ <components> ]
@@ -168,12 +132,7 @@ public class JsonCalendarBuilder {
 
       lastComponent = "vcalendar";
 
-      bs.setCalendar(null);
-      processVcalendar(parser, bs);
-
-      if (bs.getCalendar() != null) {
-        bs.getCalendars().add(bs.getCalendar());
-      }
+      processVcalendar(parser, handler);
 
       arrayEnd(parser);
     } catch (final Throwable t) {
@@ -182,55 +141,60 @@ public class JsonCalendarBuilder {
   }
 
   private void processVcalendar(final JsonParser parser,
-                                final BuildState bs) throws ParserException {
-    bs.getContentHandler().startCalendar();
+                                final ContentHandler handler)
+          throws ParserException {
+    handler.startCalendar();
 
     /* Properties first */
-    processProperties(parser, bs);
+    processProperties(parser, handler);
 
     /* Now components */
-    processCalcomps(parser, bs);
+    processCalcomps(parser, handler);
   }
 
   private void processProperties(final JsonParser parser,
-                                 final BuildState bs) throws ParserException {
+                                 final ContentHandler handler)
+          throws ParserException {
     arrayStart(parser);
 
     while (!testArrayEnd(parser)) {
-      processProperty(parser, bs);
+      processProperty(parser, handler);
     }
   }
 
   private void processCalcomps(final JsonParser parser,
-                               final BuildState bs) throws ParserException {
+                               final ContentHandler handler)
+          throws ParserException {
     arrayStart(parser);
 
     while (!testArrayEnd(parser)) {
-      processComponent(parser, bs);
+      processComponent(parser, handler);
     }
   }
 
   private void processComponent(final JsonParser parser,
-                                final BuildState bs) throws ParserException {
+                                final ContentHandler handler)
+          throws ParserException {
     currentArrayStart(parser);
 
     final String cname = textField(parser).toUpperCase();
     lastComponent = cname;
-    bs.getContentHandler().startComponent(cname);
+    handler.startComponent(cname);
 
     /* Properties first */
-    processProperties(parser, bs);
+    processProperties(parser, handler);
 
     /* Now components */
-    processCalcomps(parser, bs);
+    processCalcomps(parser, handler);
 
-    bs.getContentHandler().endComponent(cname);
+    handler.endComponent(cname);
 
     arrayEnd(parser);
   }
 
   private void processProperty(final JsonParser parser,
-                               final BuildState bs) throws ParserException {
+                               final ContentHandler handler)
+          throws ParserException {
     /* Each individual iCalendar property is represented in jCal by an array
       with three fixed elements, followed by at one or more additional
       elements, depending on if the property is a multi-value property as
@@ -253,13 +217,18 @@ public class JsonCalendarBuilder {
 
     final String name = textField(parser);
     lastProperty = name;
-    bs.getContentHandler().startProperty(name);
+    handler.startProperty(name);
 
-    processParameters(parser, bs);
+    processParameters(parser, handler);
 
-    final boolean parseArrayEnd = processValue(parser, bs, textField(parser));
+    final boolean parseArrayEnd =
+            processValue(parser, handler, textField(parser));
 
-    bs.getContentHandler().endProperty(name);
+    try {
+      handler.endProperty(name);
+    } catch (final Throwable t) {
+      handleException(t, parser);
+    }
 
     if (parseArrayEnd) {
       arrayEnd(parser);
@@ -267,56 +236,54 @@ public class JsonCalendarBuilder {
   }
 
   private void processParameters(final JsonParser parser,
-                                 final BuildState bs) throws ParserException {
+                                 final ContentHandler handler)
+          throws ParserException {
     objectStart(parser);
 
     while (!testObjectEnd(parser)) {
-      processParameter(parser, bs);
+      processParameter(parser, handler);
     }
   }
 
   private void processParameter(final JsonParser parser,
-                                final BuildState bs) throws ParserException {
+                                final ContentHandler handler)
+          throws ParserException {
     try {
-      bs.getContentHandler().parameter(currentFieldName(parser),
-                                       textField(parser));
-    } catch (Throwable t) {
+      handler.parameter(currentFieldName(parser),
+                        textField(parser));
+    } catch (final Throwable t) {
       handleException(t, parser);
     }
   }
 
-  /**
-   * @param parser the parser
-   * @param bs current state
-   * @param type type of value
-   * @return true if array end has to be parsed
-   * @throws ParserException
-   */
   private boolean processValue(final JsonParser parser,
-                               final BuildState bs,
-                               final String type) throws ParserException {
+                               final ContentHandler handler,
+                               final String type)
+          throws ParserException {
+    var parseArrayEnd = true;
+
     try {
-      if (bs.getProperty() instanceof Geo) {
+      if (lastProperty.equals("geo")) {
         // 2 floats in an array
         arrayStart(parser);
 
         final StringBuilder sb = new StringBuilder();
 
-        sb.append(String.valueOf(floatField(parser)));
+        sb.append(floatField(parser));
         sb.append(",");
-        sb.append(String.valueOf(floatField(parser)));
+        sb.append(floatField(parser));
 
         arrayEnd(parser);
 
-        bs.getContentHandler().propertyValue(sb.toString());
+        handler.propertyValue(sb.toString());
 
         return true;
       }
 
-      if (bs.getProperty() instanceof RequestStatus) {
+      if (lastProperty.equals("request-status")) {
         arrayStart(parser);
 
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
 
         sb.append(textField(parser));
         sb.append(",");
@@ -329,13 +296,15 @@ public class JsonCalendarBuilder {
           arrayEnd(parser);
         }
 
-        bs.getContentHandler().propertyValue(sb.toString());
+        handler.propertyValue(sb.toString());
 
         return true;
       }
 
-      if (type.equals("recur")) {
-        /*
+      final StringBuilder sb;
+      switch (type) {
+        case "recur":
+          /*
             value-recur = element recur {
               type-freq,
               (type-until | type-count)?,
@@ -352,114 +321,109 @@ public class JsonCalendarBuilder {
               element wkst { type-weekday }?
           }
 
-         */
-        final StringBuilder sb = new StringBuilder();
+          */
+          sb = new StringBuilder();
 
-        String delim = "";
+          String delim = "";
 
-        objectStart(parser);
+          objectStart(parser);
 
-        while (!testObjectEnd(parser)) {
-          sb.append(delim);
-          delim = ";";
-          final String recurEl = currentFieldName(parser);
-          sb.append(recurEl.toUpperCase());
-          sb.append("=");
-          sb.append(recurElVal(parser, recurEl));
-        }
+          while (!testObjectEnd(parser)) {
+            sb.append(delim);
+            delim = ";";
+            final String recurEl = currentFieldName(parser);
+            sb.append(recurEl.toUpperCase());
+            sb.append("=");
+            sb.append(recurElVal(parser, recurEl));
+          }
 
-        bs.getContentHandler().propertyValue(sb.toString());
+          handler.propertyValue(sb.toString());
 
-        return true;
+          break;
+
+        case "boolean":
+          handler.propertyValue(String.valueOf(
+                  booleanField(parser)));
+
+          break;
+
+        case "utc-offset":
+          handler.propertyValue(
+                  XcalUtil.getIcalUtcOffset(textField(parser)));
+
+          break;
+
+        case "binary":
+        case "cal-address":
+        case "duration":
+        case "text":
+        case "uri":
+          sb = new StringBuilder();
+          delim = "";
+
+          while (!testArrayEnd(parser)) {
+            sb.append(delim);
+            delim = ",";
+            sb.append(currentTextField(parser));
+          }
+
+          handler.propertyValue(sb.toString());
+
+          parseArrayEnd = false;
+          break;
+
+        case "integer":
+          handler.propertyValue(String.valueOf(intField(
+                  parser)));
+
+          break;
+
+        case "float":
+          handler.propertyValue(String.valueOf(intField(
+                  parser)));
+
+          break;
+
+        case "date":
+        case "date-time":
+          handler.propertyValue(
+                  XcalUtil.getIcalFormatDateTime(
+                          textField(parser)));
+          break;
+
+        case "time":
+          handler.propertyValue(
+                  XcalUtil.getIcalFormatTime(textField(parser)));
+          break;
+
+        case "period":
+          final String[] parts = textField(parser).split("/");
+
+          sb = new StringBuilder();
+
+          sb.append(XcalUtil.getIcalFormatDateTime(parts[0]));
+
+          if (parts[1].toUpperCase().startsWith("P")) {
+            sb.append(parts[1]);
+          } else {
+            sb.append(XcalUtil.getIcalFormatDateTime(parts[1]));
+          }
+
+          handler.propertyValue(sb.toString());
+
+          break;
+
+        default:
+          throwException("Bad property", parser);
+          return false;
       }
-
-      if (type.equals("boolean")) {
-        bs.getContentHandler().propertyValue(String.valueOf(
-                booleanField(parser)));
-
-        return true;
-      }
-
-      if (type.equals("utc-offset")) {
-        bs.getContentHandler().propertyValue(
-                XcalUtil.getIcalUtcOffset(textField(parser)));
-
-        return true;
-      }
-
-      if (type.equals("binary") ||
-          type.equals("cal-address") ||
-          type.equals("duration") ||
-          type.equals("text") ||
-          type.equals("uri")) {
-        final StringBuilder res = new StringBuilder();
-        String delim = "";
-
-        while (!testArrayEnd(parser)) {
-          res.append(delim);
-          delim = ",";
-          res.append(currentTextField(parser));
-        }
-
-        bs.getContentHandler().propertyValue(res.toString());
-
-        return false;
-      }
-
-      if (type.equals("integer")) {
-        bs.getContentHandler().propertyValue(String.valueOf(intField(
-                parser)));
-
-        return true;
-      }
-
-      if (type.equals("float")) {
-        bs.getContentHandler().propertyValue(String.valueOf(intField(
-                parser)));
-
-        return true;
-      }
-
-      if (type.equals("date") ||
-          type.equals("date-time")) {
-        bs.getContentHandler().propertyValue(
-                XcalUtil.getIcalFormatDateTime(textField(parser)));
-        return true;
-      }
-
-      if (type.equals("time")) {
-        bs.getContentHandler().propertyValue(
-                XcalUtil.getIcalFormatTime(textField(parser)));
-        return true;
-      }
-
-      if (type.equals("period")) {
-        String[] parts = textField(parser).split("/");
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(XcalUtil.getIcalFormatDateTime(parts[0]));
-
-        if (parts[1].toUpperCase().startsWith("P")) {
-          sb.append(parts[1]);
-        } else {
-          sb.append(XcalUtil.getIcalFormatDateTime(parts[1]));
-        }
-
-        bs.getContentHandler().propertyValue(sb.toString());
-
-        return true;
-      }
-    } catch (URISyntaxException e) {
-      throw new ParserException(e.getMessage(), 0, e);
-    } catch (ParseException e) {
-      throw new ParserException(e.getMessage(), 0, e);
-    } catch (IOException e) {
+    } catch (final URISyntaxException |
+            ParseException |
+            IOException e) {
       throw new ParserException(e.getMessage(), 0, e);
     }
 
-    throwException("Bad property", parser);
-    return false;
+    return parseArrayEnd;
   }
 
   private String recurElVal(final JsonParser parser,
@@ -524,56 +488,6 @@ public class JsonCalendarBuilder {
     return null;
   }
 
-  /**
-   * Returns the timezone registry used in the construction of calendars.
-   * @return a timezone registry
-   */
-  public final TimeZoneRegistry getRegistry() {
-    return tzRegistry;
-  }
-
-  private void resolveTimezones(final BuildState bs) throws IOException {
-
-    // Go through each property and try to resolve the TZID.
-    for (final Property property: bs.getDatesMissingTimezones()) {
-      final Parameter tzParam = property.getParameter(Parameter.TZID);
-
-      // tzParam might be null:
-      if (tzParam == null) {
-        continue;
-      }
-
-      //lookup timezone
-      final TimeZone timezone = tzRegistry.getTimeZone(tzParam.getValue());
-
-      // If timezone found, then update date property
-      if (timezone != null) {
-        // Get the String representation of date(s) as
-        // we will need this after changing the timezone
-        final String strDate = property.getValue();
-
-        // Change the timezone
-        if(property instanceof DateProperty) {
-          ((DateProperty) property).setTimeZone(timezone);
-        }
-        else if(property instanceof DateListProperty) {
-          ((DateListProperty) property).setTimeZone(timezone);
-        }
-
-        // Reset value
-        try {
-          property.setValue(strDate);
-        } catch (final ParseException e) {
-          // shouldn't happen as its already been parsed
-          throw new CalendarException(e);
-        } catch (final URISyntaxException e) {
-          // shouldn't happen as its already been parsed
-          throw new CalendarException(e);
-        }
-      }
-    }
-  }
-
   /* ====================================================================
    *                   XmlUtil wrappers
    * ==================================================================== */
@@ -611,35 +525,42 @@ public class JsonCalendarBuilder {
     }
   }
 
-  private void arrayStart(final JsonParser parser) throws ParserException {
+  private void arrayStart(final JsonParser parser)
+          throws ParserException {
     expectToken(parser, JsonToken.START_ARRAY,
                 "Expected array start");
   }
 
-  private void arrayEnd(final JsonParser parser) throws ParserException {
+  private void arrayEnd(final JsonParser parser)
+          throws ParserException {
     expectToken(parser, JsonToken.END_ARRAY,
                 "Expected array end");
   }
 
-  private void currentArrayStart(final JsonParser parser) throws ParserException {
+  private void currentArrayStart(final JsonParser parser)
+          throws ParserException {
     expectCurrentToken(parser, JsonToken.START_ARRAY,
                        "Expected array start");
   }
 
-  private boolean testNextArrayStart(final JsonParser parser) throws ParserException {
+  private boolean testNextArrayStart(final JsonParser parser)
+          throws ParserException {
     return testToken(parser, JsonToken.START_ARRAY);
   }
 
-  private boolean testArrayEnd(final JsonParser parser) throws ParserException {
+  private boolean testArrayEnd(final JsonParser parser)
+          throws ParserException {
     return testToken(parser, JsonToken.END_ARRAY);
   }
 
-  private void objectStart(final JsonParser parser) throws ParserException {
+  private void objectStart(final JsonParser parser)
+          throws ParserException {
     expectToken(parser, JsonToken.START_OBJECT,
                 "Expected object start");
   }
 
-  private boolean testObjectEnd(final JsonParser parser) throws ParserException {
+  private boolean testObjectEnd(final JsonParser parser)
+          throws ParserException {
     return testToken(parser, JsonToken.END_OBJECT);
   }
 
@@ -730,7 +651,7 @@ public class JsonCalendarBuilder {
                 "Expected integer field");
     try {
       return parser.getIntValue();
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       return (Integer)handleException(t, parser);
     }
   }
@@ -740,7 +661,7 @@ public class JsonCalendarBuilder {
                 "Expected float field");
     try {
       return parser.getFloatValue();
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       return (Float)handleException(t, parser);
     }
   }
@@ -757,7 +678,7 @@ public class JsonCalendarBuilder {
 
       throwException("expected boolean constant", parser);
       return false;
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       return (Boolean)handleException(t, parser);
     }
   }
@@ -767,7 +688,7 @@ public class JsonCalendarBuilder {
                 "Expected field name");
     try {
       return parser.getText();
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       return (String)handleException(t, parser);
     }
   }
@@ -778,7 +699,7 @@ public class JsonCalendarBuilder {
       return currentTextField(parser);
     }
 
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
     String delim = "";
     while (!testArrayEnd(parser)) {
       sb.append(delim);
@@ -795,7 +716,7 @@ public class JsonCalendarBuilder {
       return String.valueOf(currentIntField(parser));
     }
 
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
     String delim = "";
     while (!testArrayEnd(parser)) {
       sb.append(delim);

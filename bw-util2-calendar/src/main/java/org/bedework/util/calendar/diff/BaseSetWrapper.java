@@ -18,6 +18,8 @@
 */
 package org.bedework.util.calendar.diff;
 
+import org.bedework.util.misc.ToString;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -33,10 +35,10 @@ import javax.xml.namespace.QName;
  * @param <ParentT>
  * @param <ListT>
  */
-abstract class BaseSetWrapper<T extends BaseWrapper,
-                              ParentT extends BaseWrapper, ListT>
+abstract class BaseSetWrapper<T extends BaseWrapper<?>,
+                              ParentT extends BaseWrapper<?>, ListT>
         extends BaseWrapper<ParentT> {
-  private Set<T> els = new TreeSet<T>();
+  private final Set<T> els = new TreeSet<>();
 
   private T[] tarray;
 
@@ -49,8 +51,8 @@ abstract class BaseSetWrapper<T extends BaseWrapper,
       return;
     }
 
-    for (ListT el: elsList) {
-      Set<T> t = getWrapped(el);
+    for (final ListT el: elsList) {
+      final Set<T> t = getWrapped(el);
 
       if (t == null) {
         // Skip this one
@@ -65,7 +67,7 @@ abstract class BaseSetWrapper<T extends BaseWrapper,
     tarray = getTarray(els.size());
     int i = 0;
 
-    for (T t: els) {
+    for (final T t: els) {
       getTarray()[i] = t;
       i++;
     }
@@ -76,7 +78,7 @@ abstract class BaseSetWrapper<T extends BaseWrapper,
    * object. For those special cases it will return a set of the wrapped
    * objects.
    *
-   * @param el
+   * @param el List type
    * @return null if the property is skipped, one or more wrapped objects otherwise.
    */
   abstract Set<T> getWrapped(ListT el);
@@ -96,7 +98,7 @@ abstract class BaseSetWrapper<T extends BaseWrapper,
   }
 
   T find(final QName nm) {
-    for (T t: els) {
+    for (final T t: els) {
       if (t.getName().equals(nm)) {
         return t;
       }
@@ -106,9 +108,9 @@ abstract class BaseSetWrapper<T extends BaseWrapper,
   }
 
   List<T> findAll(final QName nm) {
-    List<T> found = new ArrayList<T>();
+    final List<T> found = new ArrayList<>();
 
-    for (T t: els) {
+    for (final T t: els) {
       if (t.getName().equals(nm)) {
         found.add(t);
       }
@@ -118,13 +120,21 @@ abstract class BaseSetWrapper<T extends BaseWrapper,
   }
 
   @Override
-  protected void toStringSegment(final StringBuilder sb) {
-    sb.append("size=");
-    sb.append(size());
+  protected void toStringSegment(final ToString ts) {
+    ts.append("size", size());
 
-    for (T t: els) {
-      sb.append(",\n   ");
-      sb.append(t.toString());
+    for (final T t: els) {
+      ts.newLine();
+      ts.append(t.toString());
     }
+  }
+
+  @Override
+  public String toString() {
+    final ToString ts = new ToString(this);
+
+    toStringSegment(ts);
+
+    return ts.toString();
   }
 }

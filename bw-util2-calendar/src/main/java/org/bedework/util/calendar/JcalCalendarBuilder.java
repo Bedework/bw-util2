@@ -16,6 +16,37 @@
     specific language governing permissions and limitations
     under the License.
 */
+/*
+ * Copyright (c) 2010, Ben Fortuna
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *  o Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *
+ *  o Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ *  o Neither the name of Ben Fortuna nor the names of any other contributors
+ * may be used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package org.bedework.util.calendar;
 
 import net.fortuna.ical4j.data.CalendarParser;
@@ -32,7 +63,7 @@ import java.io.Reader;
 import java.util.function.Consumer;
 
 /**
- * Parses and builds an iCalendar model from an xml input stream.
+ * Parses and builds an iCalendar model from a json input stream.
  * Note that this class is not thread-safe.
  *
  * @version 1.0
@@ -41,7 +72,7 @@ import java.util.function.Consumer;
  * Created: Sept 8, 2010
  *
  */
-public class XmlCalendarBuilder implements Consumer<Calendar> {
+public class JcalCalendarBuilder implements Consumer<Calendar> {
   //private Logger log = Logger.getLogger(XmlCalendarBuilder.class);
 
   private final CalendarParser parser;
@@ -56,16 +87,17 @@ public class XmlCalendarBuilder implements Consumer<Calendar> {
   private Calendar calendar;
 
   /**
+   * Default constructor.
    */
-  public XmlCalendarBuilder() {
+  public JcalCalendarBuilder() {
     this(TimeZoneRegistryFactory.getInstance().createRegistry());
   }
 
   /**
    * @param tzRegistry a custom timezone registry
    */
-  public XmlCalendarBuilder(final TimeZoneRegistry tzRegistry) {
-    this.parser = new XcalCalendarParser();
+  public JcalCalendarBuilder(final TimeZoneRegistry tzRegistry) {
+    this.parser = new JcalCalendarParser();
     this.tzRegistry = tzRegistry;
     this.contentHandler = new DefaultContentHandler(this, tzRegistry);
   }
@@ -77,10 +109,13 @@ public class XmlCalendarBuilder implements Consumer<Calendar> {
 
   /**
    * Builds an iCalendar model from the specified input stream.
+   *
    * @param in an input stream to read calendar data from
    * @return a calendar parsed from the specified input stream
-   * @throws IOException where an error occurs reading data from the specified stream
-   * @throws ParserException where an error occurs parsing data from the stream
+   * @throws IOException when an error occurs reading data from the
+   *         specified reader
+   * @throws ParserException when an error occurs parsing data from
+   *          the reader
    */
   public Calendar build(final InputStream in)
           throws IOException, ParserException {
@@ -92,10 +127,12 @@ public class XmlCalendarBuilder implements Consumer<Calendar> {
   /**
    * Build an iCalendar model by parsing data from the specified reader.
    *
-   * @param in an unfolding reader to read data from
+   * @param in a reader to read data from
    * @return a calendar parsed from the specified reader
-   * @throws IOException where an error occurs reading data from the specified reader
-   * @throws ParserException where an error occurs parsing data from the reader
+   * @throws IOException when an error occurs reading data from the
+   *         specified reader
+   * @throws ParserException when an error occurs parsing data from
+   *          the reader
    */
   public Calendar build(final Reader in)
           throws IOException, ParserException {

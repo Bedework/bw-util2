@@ -154,29 +154,26 @@ public class IcalToXcal {
   static ObjectFactory of = new ObjectFactory();
 
   /**
-   * @param cal
+   * @param cal an ical4j calendar
    * @param pattern - allows specification of a subset to be returned.
    * @return icalendar in XML
-   * @throws Throwable
    */
   public static IcalendarType fromIcal(final Calendar cal,
                                        final BaseComponentType pattern,
-                                       final boolean wrapXprops) throws Throwable {
+                                       final boolean wrapXprops) {
     return fromIcal(cal, pattern, false, wrapXprops);
   }
 
   /**
-   * @param cal
-   * @param pattern
-   * @param doTimezones
+   * @param cal an ical4j calendar
+   * @param pattern - allows specification of a subset to be returned.
+   * @param doTimezones false to skip timezones
    * @return Internal XML representation of iCalendar object
-   * @throws Throwable
    */
-  @SuppressWarnings("unchecked")
   public static IcalendarType fromIcal(final Calendar cal,
                                        final BaseComponentType pattern,
                                        final boolean doTimezones,
-                                       final boolean wrapXprops) throws Throwable {
+                                       final boolean wrapXprops) {
     final IcalendarType ical = new IcalendarType();
     final VcalendarType vcal = new VcalendarType();
 
@@ -185,7 +182,8 @@ public class IcalToXcal {
     processProperties(cal.getProperties(), vcal,
                       pattern, wrapXprops);
 
-    final ComponentList icComps = cal.getComponents();
+    final ComponentList<? extends CalendarComponent> icComps =
+            cal.getComponents();
 
     if (icComps == null) {
       return ical;
@@ -194,12 +192,12 @@ public class IcalToXcal {
     final ArrayOfComponents aoc = new ArrayOfComponents();
     vcal.setComponents(aoc);
 
-    for (final Object o: icComps) {
+    for (final var o: icComps) {
       if (!doTimezones && (o instanceof VTimeZone)) {
         // Skip these
         continue;
       }
-      aoc.getBaseComponent().add(toComponent((CalendarComponent)o,
+      aoc.getBaseComponent().add(toComponent(o,
                                              pattern,
                                              wrapXprops));
     }
@@ -210,29 +208,28 @@ public class IcalToXcal {
   /** Make a BaseComponentType component from an ical4j object. This may produce a
    * VEvent, VTodo or VJournal.
    *
-   * @param val
+   * @param val the component
    * @param pattern - if non-null limit returned components and values to those
    *                  supplied in the pattern.
    * @return JAXBElement<? extends BaseComponentType>
-   * @throws Throwable
    */
-  public static JAXBElement
+  public static JAXBElement<? extends BaseComponentType>
                     toComponent(final Component val,
                                 final BaseComponentType pattern,
-                                final boolean wrapXprops) throws Throwable {
+                                final boolean wrapXprops) {
     if (val == null) {
       return null;
     }
 
     final PropertyList icprops = val.getProperties();
-    ComponentList icComps = null;
+    ComponentList<? extends Component> icComps = null;
 
     if (icprops == null) {
       // Empty component
       return null;
     }
 
-    final JAXBElement el;
+    final JAXBElement<? extends BaseComponentType> el;
 
     if (val instanceof VEvent) {
       el = of.createVevent(new VeventType());
@@ -254,11 +251,11 @@ public class IcalToXcal {
     } else if (val instanceof Standard) {
       el = of.createStandard(new StandardType());
     } else {
-      throw new Exception("org.bedework.invalid.entity.type" +
+      throw new RuntimeException("org.bedework.invalid.entity.type" +
           val.getClass().getName());
     }
 
-    final BaseComponentType comp = (BaseComponentType)el.getValue();
+    final BaseComponentType comp = el.getValue();
 
     processProperties(val.getProperties(), comp,
                       pattern, wrapXprops);
@@ -271,10 +268,9 @@ public class IcalToXcal {
     final ArrayOfComponents aoc = new ArrayOfComponents();
     comp.setComponents(aoc);
 
-    for (final Object o: icComps) {
-      @SuppressWarnings("unchecked")
+    for (final var o: icComps) {
       final JAXBElement<? extends BaseComponentType> subel =
-              toComponent((Component)o,
+              toComponent(o,
                           pattern, wrapXprops);
       aoc.getBaseComponent().add(subel);
     }
@@ -283,15 +279,14 @@ public class IcalToXcal {
   }
 
   /**
-   * @param icprops
-   * @param comp
-   * @param pattern
-   * @throws Throwable
+   * @param icprops property list
+   * @param comp xml base component
+   * @param pattern pattern
    */
   public static void processProperties(final PropertyList icprops,
                                        final BaseComponentType comp,
                                        final BaseComponentType pattern,
-                                       final boolean wrapXprops) throws Throwable {
+                                       final boolean wrapXprops) {
     if ((icprops == null) || icprops.isEmpty()) {
       return;
     }
@@ -321,9 +316,10 @@ public class IcalToXcal {
     }
   }
 
-  static JAXBElement<? extends BasePropertyType> doProperty(final Property prop,
-                                                     final PropertyInfoIndex pii,
-                                                     final boolean wrapXprops) throws Throwable {
+  static JAXBElement<? extends BasePropertyType> doProperty(
+          final Property prop,
+          final PropertyInfoIndex pii,
+          final boolean wrapXprops) {
     if (prop instanceof XProperty) {
       if (!wrapXprops) {
         return null;
@@ -352,7 +348,7 @@ public class IcalToXcal {
       case ACTION:
         /* ------------------- Action: Alarm -------------------- */
 
-        ActionPropType a = new ActionPropType();
+        final ActionPropType a = new ActionPropType();
         a.setText(prop.getValue());
         return of.createAction(a);
 
@@ -376,12 +372,12 @@ public class IcalToXcal {
 
         // LANG - filter on language - group language in one cat list?
 
-        CategoriesPropType c = new CategoriesPropType();
-        TextList cats = ((Categories)prop).getCategories();
+        final CategoriesPropType c = new CategoriesPropType();
+        final TextList cats = ((Categories)prop).getCategories();
 
-        Iterator pit = cats.iterator();
+        final Iterator<String> pit = cats.iterator();
         while (pit.hasNext()) {
-          c.getText().add((String)pit.next());
+          c.getText().add(pit.next());
         }
 
         return of.createCategories(c);
@@ -389,21 +385,21 @@ public class IcalToXcal {
       case CLASS:
         /* ------------------- Class -------------------- */
 
-        ClassPropType cl = new ClassPropType();
+        final ClassPropType cl = new ClassPropType();
         cl.setText(prop.getValue());
         return of.createClass(cl);
 
       case COMMENT:
         /* ------------------- Comments -------------------- */
 
-        CommentPropType cm = new CommentPropType();
+        final CommentPropType cm = new CommentPropType();
         cm.setText(prop.getValue());
         return of.createComment(cm);
 
       case COMPLETED:
         /* ------------------- Completed -------------------- */
 
-        CompletedPropType cmp = new CompletedPropType();
+        final CompletedPropType cmp = new CompletedPropType();
         cmp.setUtcDateTime(XcalUtil.getXMlUTCCal(prop.getValue()));
         return of.createCompleted(cmp);
 
@@ -411,7 +407,7 @@ public class IcalToXcal {
         /* ------------------- Contact -------------------- */
 
         // LANG
-        ContactPropType ct = new ContactPropType();
+        final ContactPropType ct = new ContactPropType();
         ct.setText(prop.getValue());
 
         return of.createContact(ct);
@@ -419,49 +415,52 @@ public class IcalToXcal {
       case CREATED:
         /* ------------------- Created -------------------- */
 
-        CreatedPropType created = new CreatedPropType();
+        final CreatedPropType created = new CreatedPropType();
         created.setUtcDateTime(XcalUtil.getXMlUTCCal(prop.getValue()));
         return of.createCreated(created);
 
       case DESCRIPTION:
         /* ------------------- Description -------------------- */
 
-        DescriptionPropType desc = new DescriptionPropType();
+        final DescriptionPropType desc = new DescriptionPropType();
         desc.setText(prop.getValue());
         return of.createDescription(desc);
 
       case DTEND:
         /* ------------------- DtEnd -------------------- */
 
-        DtendPropType dtend = (DtendPropType)makeDateDatetime(new DtendPropType(),
-                                                              prop);
+        final DtendPropType dtend =
+                (DtendPropType)makeDateDatetime(new DtendPropType(),
+                                                prop);
         return of.createDtend(dtend);
 
       case DTSTAMP:
         /* ------------------- DtStamp -------------------- */
 
-        DtstampPropType dtstamp = new DtstampPropType();
+        final DtstampPropType dtstamp = new DtstampPropType();
         dtstamp.setUtcDateTime(XcalUtil.getXMlUTCCal(prop.getValue()));
         return of.createDtstamp(dtstamp);
 
       case DTSTART:
         /* ------------------- DtStart -------------------- */
 
-        DtstartPropType dtstart = (DtstartPropType)makeDateDatetime(new DtstartPropType(),
-                                                                    prop);
+        final DtstartPropType dtstart =
+                (DtstartPropType)makeDateDatetime(new DtstartPropType(),
+                                                  prop);
         return of.createDtstart(dtstart);
 
       case DUE:
         /* ------------------- Due -------------------- */
 
-        DuePropType due = (DuePropType)makeDateDatetime(new DuePropType(),
-                                                        prop);
+        final DuePropType due =
+                (DuePropType)makeDateDatetime(new DuePropType(),
+                                              prop);
         return of.createDue(due);
 
       case DURATION:
         /* ------------------- Duration -------------------- */
 
-        DurationPropType dur = new DurationPropType();
+        final DurationPropType dur = new DurationPropType();
 
         dur.setDuration(prop.getValue());
         return of.createDuration(dur);
@@ -473,7 +472,7 @@ public class IcalToXcal {
       case EXRULE:
         /* ------------------- ExRule --below------------- */
 
-        ExrulePropType er = new ExrulePropType();
+        final ExrulePropType er = new ExrulePropType();
         er.setRecur(doRecur(((RRule)prop).getRecur()));
 
         return of.createExrule(er);
@@ -481,32 +480,32 @@ public class IcalToXcal {
       case FREEBUSY:
         /* ------------------- freebusy -------------------- */
 
-        FreeBusy icfb = (FreeBusy)prop;
-        PeriodList fbps = icfb.getPeriods();
+        final FreeBusy icfb = (FreeBusy)prop;
+        final PeriodList fbps = icfb.getPeriods();
 
         if (Util.isEmpty(fbps)) {
           return null;
         }
 
-        FreebusyPropType fb = new FreebusyPropType();
+        final FreebusyPropType fb = new FreebusyPropType();
 
-        String fbtype = paramVal(prop, Parameter.FBTYPE);
+        final String fbtype = paramVal(prop, Parameter.FBTYPE);
 
         if (fbtype != null) {
-          ArrayOfParameters pars = getAop(fb);
+          final ArrayOfParameters pars = getAop(fb);
 
-          FbtypeParamType f = new FbtypeParamType();
+          final FbtypeParamType f = new FbtypeParamType();
 
           f.setText(fbtype);
-          JAXBElement<FbtypeParamType> param = of.createFbtype(f);
+          final JAXBElement<FbtypeParamType> param = of.createFbtype(f);
           pars.getBaseParameter().add(param);
         }
 
-        List<PeriodType> pdl =  fb.getPeriod();
+        final List<PeriodType> pdl =  fb.getPeriod();
 
-        for (Object o: fbps) {
-          Period p = (Period)o;
-          PeriodType np = new PeriodType();
+        for (final Object o: fbps) {
+          final Period p = (Period)o;
+          final PeriodType np = new PeriodType();
 
           np.setStart(XcalUtil.getXMlUTCCal(p.getStart().toString()));
           np.setEnd(XcalUtil.getXMlUTCCal(p.getEnd().toString()));
@@ -518,8 +517,8 @@ public class IcalToXcal {
       case GEO:
         /* ------------------- Geo -------------------- */
 
-        Geo geo = (Geo)prop;
-        GeoPropType g = new GeoPropType();
+        final Geo geo = (Geo)prop;
+        final GeoPropType g = new GeoPropType();
 
         g.setLatitude(geo.getLatitude().floatValue());
         g.setLatitude(geo.getLongitude().floatValue());
@@ -528,14 +527,14 @@ public class IcalToXcal {
       case LAST_MODIFIED:
         /* ------------------- LastModified -------------------- */
 
-        LastModifiedPropType lm = new LastModifiedPropType();
+        final LastModifiedPropType lm = new LastModifiedPropType();
         lm.setUtcDateTime(XcalUtil.getXMlUTCCal(prop.getValue()));
         return of.createLastModified(lm);
 
       case LOCATION:
         /* ------------------- Location -------------------- */
 
-        LocationPropType l = new LocationPropType();
+        final LocationPropType l = new LocationPropType();
         l .setText(prop.getValue());
 
         return of.createLocation(l);
@@ -543,7 +542,7 @@ public class IcalToXcal {
       case METHOD:
         /* ------------------- Method -------------------- */
 
-        MethodPropType m = new MethodPropType();
+        final MethodPropType m = new MethodPropType();
 
         m.setText(prop.getValue());
         return of.createMethod(m);
@@ -551,43 +550,45 @@ public class IcalToXcal {
       case ORGANIZER:
         /* ------------------- Organizer -------------------- */
 
-        OrganizerPropType org = new OrganizerPropType();
+        final OrganizerPropType org = new OrganizerPropType();
         org.setCalAddress(prop.getValue());
         return of.createOrganizer(org);
 
       case PERCENT_COMPLETE:
         /* ------------------- PercentComplete -------------------- */
 
-        PercentCompletePropType p = new PercentCompletePropType();
-        p.setInteger(BigInteger.valueOf(((PercentComplete)prop).getPercentage()));
+        final PercentCompletePropType p = new PercentCompletePropType();
+        p.setInteger(BigInteger.valueOf(
+                ((PercentComplete)prop).getPercentage()));
 
         return of.createPercentComplete(p);
 
       case PRIORITY:
         /* ------------------- Priority -------------------- */
 
-        PriorityPropType pr = new PriorityPropType();
+        final PriorityPropType pr = new PriorityPropType();
         pr.setInteger(BigInteger.valueOf(((Priority)prop).getLevel()));
 
         return of.createPriority(pr);
 
       case PRODID:
         /* ------------------- Prodid -------------------- */
-        ProdidPropType prod = new ProdidPropType();
+        final ProdidPropType prod = new ProdidPropType();
         prod.setText(prop.getValue());
         return of.createProdid(prod);
 
       case RDATE:
         /* ------------------- RDate ------------------- */
 
-        RdatePropType rdate = (RdatePropType)makeDateDatetime(new RdatePropType(),
-                                                                  prop);
+        final RdatePropType rdate =
+                (RdatePropType)makeDateDatetime(new RdatePropType(),
+                                                prop);
         return of.createRdate(rdate);
 
       case RECURRENCE_ID:
         /* ------------------- RecurrenceID -------------------- */
 
-        RecurrenceIdPropType ri = new RecurrenceIdPropType();
+        final RecurrenceIdPropType ri = new RecurrenceIdPropType();
         String strval = prop.getValue();
 
         if (dateOnly(prop)) {
@@ -607,10 +608,10 @@ public class IcalToXcal {
       case RELATED_TO:
         /* ------------------- RelatedTo -------------------- */
 
-        RelatedToPropType rt = new RelatedToPropType();
+        final RelatedToPropType rt = new RelatedToPropType();
 
-        String relType = paramVal(prop, Parameter.RELTYPE);
-        String value = paramVal(prop, Parameter.VALUE);
+        final String relType = paramVal(prop, Parameter.RELTYPE);
+        final String value = paramVal(prop, Parameter.VALUE);
 
         if ((value == null) || "uid".equalsIgnoreCase(value)) {
           rt.setUid(prop.getValue());
@@ -621,11 +622,11 @@ public class IcalToXcal {
         }
 
         if (relType != null) {
-          ArrayOfParameters pars = getAop(rt);
+          final ArrayOfParameters pars = getAop(rt);
 
-          ReltypeParamType r = new ReltypeParamType();
+          final ReltypeParamType r = new ReltypeParamType();
           r.setText(relType);
-          JAXBElement<ReltypeParamType> param = of.createReltype(r);
+          final JAXBElement<ReltypeParamType> param = of.createReltype(r);
           pars.getBaseParameter().add(param);
         }
 
@@ -633,8 +634,8 @@ public class IcalToXcal {
 
       case REPEAT:
         /* ------------------- Repeat Alarm -------------------- */
-        Repeat rept = (Repeat)prop;
-        RepeatPropType rep = new RepeatPropType();
+        final Repeat rept = (Repeat)prop;
+        final RepeatPropType rep = new RepeatPropType();
         rep.setInteger(BigInteger.valueOf(rept.getCount()));
 
         return of.createRepeat(rep);
@@ -648,14 +649,14 @@ public class IcalToXcal {
       case RESOURCES:
         /* ------------------- Resources -------------------- */
 
-        ResourcesPropType r = new ResourcesPropType();
+        final ResourcesPropType r = new ResourcesPropType();
 
-        List<String> rl = r.getText();
-        TextList rlist = ((Resources)prop).getResources();
+        final List<String> rl = r.getText();
+        final TextList rlist = ((Resources)prop).getResources();
 
-        Iterator rlit = rlist.iterator();
+        final Iterator<String> rlit = rlist.iterator();
         while (rlit.hasNext()) {
-          rl.add((String)rlit.next());
+          rl.add(rlit.next());
         }
 
         return of.createResources(r);
@@ -663,7 +664,7 @@ public class IcalToXcal {
       case RRULE:
         /* ------------------- RRule ------------------- */
 
-        RrulePropType rrp = new RrulePropType();
+        final RrulePropType rrp = new RrulePropType();
         rrp.setRecur(doRecur(((RRule)prop).getRecur()));
 
         return of.createRrule(rrp);
@@ -671,7 +672,7 @@ public class IcalToXcal {
       case SEQUENCE:
         /* ------------------- Sequence -------------------- */
 
-        SequencePropType s = new SequencePropType();
+        final SequencePropType s = new SequencePropType();
         s.setInteger(BigInteger.valueOf(((Sequence)prop).getSequenceNo()));
 
         return of.createSequence(s);
@@ -679,7 +680,7 @@ public class IcalToXcal {
       case STATUS:
         /* ------------------- Status -------------------- */
 
-        StatusPropType st = new StatusPropType();
+        final StatusPropType st = new StatusPropType();
 
         st.setText(prop.getValue());
         return of.createStatus(st);
@@ -687,26 +688,26 @@ public class IcalToXcal {
       case SUMMARY:
         /* ------------------- Summary -------------------- */
 
-        SummaryPropType sum = new SummaryPropType();
+        final SummaryPropType sum = new SummaryPropType();
         sum.setText(prop.getValue());
         return of.createSummary(sum);
 
       case TRIGGER:
         /* ------------------- Trigger - alarm -------------------- */
-        TriggerPropType trig = new TriggerPropType();
+        final TriggerPropType trig = new TriggerPropType();
 
-        String valType = paramVal(prop, Parameter.VALUE);
+        final String valType = paramVal(prop, Parameter.VALUE);
 
         if ((valType == null) ||
             (valType.equalsIgnoreCase(Value.DURATION.getValue()))) {
           trig.setDuration(prop.getValue());
-          String rel = paramVal(prop, Parameter.RELATED);
+          final String rel = paramVal(prop, Parameter.RELATED);
           if (rel != null) {
-            ArrayOfParameters pars = getAop(trig);
+            final ArrayOfParameters pars = getAop(trig);
 
-            RelatedParamType rpar = new RelatedParamType();
+            final RelatedParamType rpar = new RelatedParamType();
             rpar.setText(IcalDefs.alarmTriggerRelatedEnd);
-            JAXBElement<RelatedParamType> param = of.createRelated(rpar);
+            final JAXBElement<RelatedParamType> param = of.createRelated(rpar);
             pars.getBaseParameter().add(param);
           }
         } else if (valType.equalsIgnoreCase(Value.DATE_TIME.getValue())) {
@@ -719,7 +720,7 @@ public class IcalToXcal {
       case TRANSP:
         /* ------------------- Transp -------------------- */
 
-        TranspPropType t = new TranspPropType();
+        final TranspPropType t = new TranspPropType();
         t.setText(prop.getValue());
         return of.createTransp(t);
 
@@ -820,15 +821,15 @@ public class IcalToXcal {
   }
 
   static void processParameters(final ParameterList icparams,
-                                final BasePropertyType prop) throws Throwable {
+                                final BasePropertyType prop) {
     if ((icparams == null) || icparams.isEmpty()) {
       return;
     }
 
-    final Iterator it = icparams.iterator();
+    final Iterator<Parameter> it = icparams.iterator();
 
     while (it.hasNext()) {
-      final Parameter param = (Parameter)it.next();
+      final Parameter param = it.next();
 
       final ParameterInfoIndex pii =
               ParameterInfoIndex.lookupPname(param.getName());
@@ -850,36 +851,37 @@ public class IcalToXcal {
     }
   }
 
-  static JAXBElement<? extends BaseParameterType> doParameter(final Parameter param,
-                                                     final ParameterInfoIndex pii) throws Throwable {
+  static JAXBElement<? extends BaseParameterType>
+  doParameter(final Parameter param,
+              final ParameterInfoIndex pii) {
     switch (pii) {
       case ALTREP:
-        AltrepParamType ar = new AltrepParamType();
+        final AltrepParamType ar = new AltrepParamType();
         ar.setUri(param.getValue());
         return of.createAltrep(ar);
 
       case CN:
-        CnParamType cn = new CnParamType();
+        final CnParamType cn = new CnParamType();
         cn.setText(param.getValue());
         return of.createCn(cn);
 
       case CUTYPE:
-        CutypeParamType c = new CutypeParamType();
+        final CutypeParamType c = new CutypeParamType();
         c.setText(param.getValue());
         return of.createCutype(c);
 
       case DELEGATED_FROM:
-        DelegatedFromParamType df = new DelegatedFromParamType();
+        final DelegatedFromParamType df = new DelegatedFromParamType();
         df.getCalAddress().add(param.getValue());
         return of.createDelegatedFrom(df);
 
       case DELEGATED_TO:
-        DelegatedToParamType dt = new DelegatedToParamType();
+        final DelegatedToParamType dt = new DelegatedToParamType();
         dt.getCalAddress().add(param.getValue());
         return of.createDelegatedTo(dt);
 
       case DIR:
-        DirParamType d = new DirParamType();
+        final DirParamType d = new DirParamType();
         d.setUri(param.getValue());
         return of.createDir(d);
 
@@ -893,17 +895,17 @@ public class IcalToXcal {
         return null;
 
       case LANGUAGE:
-        LanguageParamType l = new LanguageParamType();
+        final LanguageParamType l = new LanguageParamType();
         l.setText(param.getValue());
         return of.createLanguage(l);
 
       case MEMBER:
-        MemberParamType m = new MemberParamType();
+        final MemberParamType m = new MemberParamType();
         m.getCalAddress().add(param.getValue());
         return of.createMember(m);
 
       case PARTSTAT:
-        PartstatParamType partstat = new PartstatParamType();
+        final PartstatParamType partstat = new PartstatParamType();
         partstat.setText(param.getValue());
         return of.createPartstat(partstat);
 
@@ -917,7 +919,7 @@ public class IcalToXcal {
         return null;
 
       case ROLE:
-        RoleParamType r = new RoleParamType();
+        final RoleParamType r = new RoleParamType();
         r.setText(param.getValue());
         return of.createRole(r);
 
@@ -928,12 +930,12 @@ public class IcalToXcal {
         return null;
 
       case SCHEDULE_STATUS:
-        ScheduleStatusParamType ss = new ScheduleStatusParamType();
+        final ScheduleStatusParamType ss = new ScheduleStatusParamType();
         ss.setText(param.getValue());
         return of.createScheduleStatus(ss);
 
       case SENT_BY:
-        SentByParamType sb = new SentByParamType();
+        final SentByParamType sb = new SentByParamType();
         sb.setCalAddress(param.getValue());
         return of.createSentBy(sb);
 
@@ -941,7 +943,7 @@ public class IcalToXcal {
         return null;
 
       case TZID:
-        TzidParamType tzid = new TzidParamType();
+        final TzidParamType tzid = new TzidParamType();
         tzid.setText(param.getValue());
         return of.createTzid(tzid);
 
@@ -957,21 +959,20 @@ public class IcalToXcal {
 
   /** Build recurring properties from ical recurrence.
    *
-   * @param r
-   * @return RecurTyp filled in
-   * @throws Throwable
+   * @param r Recur object
+   * @return RecurType filled in
    */
-  public static RecurType doRecur(final Recur r) throws Throwable {
-    RecurType rt = new RecurType();
+  public static RecurType doRecur(final Recur r) {
+    final RecurType rt = new RecurType();
 
-    rt.setFreq(FreqRecurType.fromValue(r.getFrequency()));
+    rt.setFreq(FreqRecurType.fromValue(r.getFrequency().name()));
     if (r.getCount() > 0) {
       rt.setCount(BigInteger.valueOf(r.getCount()));
     }
 
-    Date until = r.getUntil();
+    final Date until = r.getUntil();
     if (until != null) {
-      UntilRecurType u = new UntilRecurType();
+      final UntilRecurType u = new UntilRecurType();
       XcalUtil.initUntilRecur(u, until.toString());
     }
 
@@ -989,9 +990,9 @@ public class IcalToXcal {
                        r.getHourList());
 
     if (r.getDayList() != null) {
-      List<String> l = rt.getByday();
+      final List<String> l = rt.getByday();
 
-      for (Object o: r.getDayList()) {
+      for (final Object o: r.getDayList()) {
         l.add(((WeekDay)o).getDay().name());
       }
     }
@@ -1020,7 +1021,7 @@ public class IcalToXcal {
       return;
     }
 
-    for (Object o: nl) {
+    for (final var o: nl) {
       l.add(String.valueOf(o));
     }
   }
@@ -1031,9 +1032,7 @@ public class IcalToXcal {
       return;
     }
 
-    for (Object o: nl) {
-      l.add((Integer)o);
-    }
+    l.addAll(nl);
   }
 
   private static void bigintlistFromNumberList(final List<BigInteger> l,
@@ -1042,13 +1041,13 @@ public class IcalToXcal {
       return;
     }
 
-    for (Object o: nl) {
-      l.add(BigInteger.valueOf((Integer)o));
+    for (final var o: nl) {
+      l.add(BigInteger.valueOf(o));
     }
   }
 
   private static String getTzid(final Property p) {
-    TzId tzidParam = (TzId)p.getParameter(Parameter.TZID);
+    final TzId tzidParam = (TzId)p.getParameter(Parameter.TZID);
 
     if (tzidParam == null) {
       return null;
@@ -1058,7 +1057,7 @@ public class IcalToXcal {
   }
 
   private static boolean dateOnly(final Property p) {
-    Value valParam = (Value)p.getParameter(Parameter.VALUE);
+    final Value valParam = (Value)p.getParameter(Parameter.VALUE);
 
     if ((valParam == null) || (valParam.getValue() == null)) {
       return false;
@@ -1069,7 +1068,7 @@ public class IcalToXcal {
 
   private static String paramVal(final Property p,
                                  final String paramName) {
-    Parameter param = p.getParameter(paramName);
+    final Parameter param = p.getParameter(paramName);
 
     if ((param == null) || (param.getValue() == null)) {
       return null;
@@ -1089,16 +1088,17 @@ public class IcalToXcal {
     return pars;
   }
 
-  private static DateDatetimePropertyType makeDateDatetime(final DateDatetimePropertyType p,
-                                                           final Property prop) throws Throwable {
+  private static DateDatetimePropertyType makeDateDatetime(
+          final DateDatetimePropertyType p,
+          final Property prop) {
     XcalUtil.initDt(p, prop.getValue(), getTzid(prop));
 
     return p;
   }
 
   private static boolean emit(final BaseComponentType pattern,
-                              final Class compCl,
-                              final Class... cl) {
+                              final Class<?> compCl,
+                              final Class<?>... cl) {
     if (pattern == null) {
       return true;
     }
@@ -1107,22 +1107,22 @@ public class IcalToXcal {
       return false;
     }
 
-    if ((cl == null) | (cl.length == 0)) {
+    if ((cl == null) || (cl.length == 0)) {
       // Any property
       return true;
     }
 
-    String className = cl[0].getName();
+    final String className = cl[0].getName();
 
     if (BasePropertyType.class.isAssignableFrom(cl[0])) {
       if (pattern.getProperties() == null) {
         return false;
       }
 
-      List<JAXBElement<? extends BasePropertyType>> patternProps =
+      final List<JAXBElement<? extends BasePropertyType>> patternProps =
          pattern.getProperties().getBasePropertyOrTzid();
 
-      for (JAXBElement<? extends BasePropertyType> jp: patternProps) {
+      for (final JAXBElement<? extends BasePropertyType> jp: patternProps) {
         if (jp.getValue().getClass().getName().equals(className)) {
           return true;
         }
@@ -1131,7 +1131,7 @@ public class IcalToXcal {
       return false;
     }
 
-    List<JAXBElement<? extends BaseComponentType>> patternComps =
+    final List<JAXBElement<? extends BaseComponentType>> patternComps =
       XcalUtil.getComponents(pattern);
 
     if (patternComps == null) {
@@ -1140,7 +1140,7 @@ public class IcalToXcal {
 
     // Check for component
 
-    for (JAXBElement<? extends BaseComponentType> jp: patternComps) {
+    for (final JAXBElement<? extends BaseComponentType> jp: patternComps) {
       if (jp.getValue().getClass().getName().equals(className)) {
         return emit(pattern, cl[0], Arrays.copyOfRange(cl, 1, cl.length - 1));
       }

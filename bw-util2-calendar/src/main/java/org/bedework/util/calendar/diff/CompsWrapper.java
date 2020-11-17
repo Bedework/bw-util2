@@ -203,14 +203,4 @@ class CompsWrapper extends BaseSetWrapper<CompWrapper, CompWrapper,
 
     return 0;
   }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("CompsWrapper{");
-
-    super.toStringSegment(sb);
-    sb.append("}");
-
-    return sb.toString();
-  }
 }

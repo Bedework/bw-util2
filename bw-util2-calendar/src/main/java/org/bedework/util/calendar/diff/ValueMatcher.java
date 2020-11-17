@@ -111,32 +111,33 @@ public class ValueMatcher {
   }
 
   private static class ValueMatcherRegistry {
-    private static Map<Class, ValueConverter> standardConverters =
-        new HashMap<Class, ValueConverter>();
+    private static final Map<Class<?>, ValueConverter<?>> standardConverters =
+        new HashMap<>();
 
-    private Map<Class, ValueConverter> nonStandardConverters;
+    private Map<Class<?>, ValueConverter<?>> nonStandardConverters;
 
     /** Register a non-standard converter. This can override standard converters.
      *
      * @param cl
      * @param vc
      */
-    public void registerConverter(final Class cl, final ValueConverter vc) {
-      if (nonStandardConverters != null) {
-        nonStandardConverters = new HashMap<Class, ValueConverter>();
+    public void registerConverter(final Class<?> cl,
+                                  final ValueConverter<?> vc) {
+      if (nonStandardConverters == null) {
+        nonStandardConverters = new HashMap<>();
       }
 
       nonStandardConverters.put(cl, vc);
     }
 
-    private void registerStandardConverter(final Class cl,
-                                           final ValueConverter vc) {
+    private void registerStandardConverter(final Class<?> cl,
+                                           final ValueConverter<?> vc) {
       standardConverters.put(cl, vc);
     }
 
-    private ValueConverter getConverter(final Object o) {
-      ValueConverter vc;
-      Class cl = o.getClass();
+    private ValueConverter<?>getConverter(final Object o) {
+      ValueConverter<?> vc;
+      final Class<?> cl = o.getClass();
 
       if (nonStandardConverters != null) {
         vc = findConverter(cl, nonStandardConverters);
@@ -154,12 +155,12 @@ public class ValueMatcher {
       return vc;
     }
 
-    static ValueConverter findConverter(final Class cl,
-                                        final Map<Class, ValueConverter> converters) {
-      Class lcl = cl;
+    static ValueConverter<?> findConverter(final Class<?> cl,
+                                           final Map<Class<?>, ValueConverter<?>> converters) {
+      Class<?> lcl = cl;
 
       while (lcl != null) {
-        ValueConverter vc = converters.get(lcl);
+        final ValueConverter<?> vc = converters.get(lcl);
 
         if (vc != null) {
           return vc;
@@ -172,9 +173,9 @@ public class ValueMatcher {
     }
   }
 
-  private static ValueMatcherRegistry registry = new ValueMatcherRegistry();
+  private static final ValueMatcherRegistry registry = new ValueMatcherRegistry();
 
-  private Map<Class, ValueConverter> instanceConverters;
+  private Map<Class<?>, ValueConverter<?>> instanceConverters;
 
   /**
    */
@@ -186,7 +187,7 @@ public class ValueMatcher {
    * @return comparator
    */
   @SuppressWarnings("unchecked")
-  public ValueComparator getComparator(final Object val) {
+  public <T> ValueComparator getComparator(final T val) {
     return getConverter(val).convert(val);
   }
 
@@ -225,28 +226,28 @@ public class ValueMatcher {
    * @param cl
    * @param vc
    */
-  public void registerInstanceConverter(final Class cl,
-                                        final ValueConverter vc) {
+  public void registerInstanceConverter(final Class<?> cl,
+                                        final ValueConverter<?> vc) {
     if (instanceConverters != null) {
-      instanceConverters = new HashMap<Class, ValueConverter>();
+      instanceConverters = new HashMap<Class<?>, ValueConverter<?>>();
     }
 
     instanceConverters.put(cl, vc);
   }
 
-  private ValueConverter getConverter(final Object o) {
-    ValueConverter vc;
-    Class cl = o.getClass();
+  private <T> ValueConverter<T> getConverter(final T o) {
+    final ValueConverter<T> vc;
+    final Class<?> cl = o.getClass();
 
     if (instanceConverters != null) {
-      vc = ValueMatcherRegistry.findConverter(cl, instanceConverters);
+      vc = (ValueConverter<T>)ValueMatcherRegistry.findConverter(cl, instanceConverters);
 
       if (vc != null) {
         return vc;
       }
     }
 
-    return registry.getConverter(o);
+    return (ValueConverter<T>)registry.getConverter(o);
   }
 
   static {
@@ -364,10 +365,11 @@ public class ValueMatcher {
                            new ScheduleForceSendParamConverter());
   }
 
-  private static abstract class DefaultConverter<T> implements ValueConverter<T> {
+  private static abstract class DefaultConverter<T>
+          implements ValueConverter<T> {
     @Override
     public List<T> getNormalized(final T val) {
-      List<T> res = new ArrayList<T>();
+      final List<T> res = new ArrayList<>();
 
       res.add(val);
 
@@ -385,7 +387,7 @@ public class ValueMatcher {
       ValueComparator vc = new ValueComparator();
 
       vc.addValue(XcalTags.textVal,
-                       val.getText().toString());
+                       val.getText());
 
       return vc;
     }

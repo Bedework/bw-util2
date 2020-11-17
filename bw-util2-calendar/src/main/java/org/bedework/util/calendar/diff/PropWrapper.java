@@ -19,6 +19,7 @@
 package org.bedework.util.calendar.diff;
 
 import org.bedework.util.calendar.XcalUtil;
+import org.bedework.util.misc.ToString;
 
 import ietf.params.xml.ns.icalendar_2.BaseParameterType;
 import ietf.params.xml.ns.icalendar_2.BasePropertyType;
@@ -49,7 +50,7 @@ class PropWrapper extends BaseEntityWrapper<PropWrapper,
   /* Key is the real name of the property - result is null for no mapping or a
    * QName we treat it as for comparison.
    */
-  private static Map<QName, QName> mappedNames = new HashMap<>();
+  private static final Map<QName, QName> mappedNames = new HashMap<>();
 
   static {
     final String ns = "urn:ietf:params:xml:ns:icalendar-2.0";
@@ -77,8 +78,8 @@ class PropWrapper extends BaseEntityWrapper<PropWrapper,
   }
 
   @Override
-  boolean sameEntity(final BaseEntityWrapper val) {
-    int res = super.compareNameClass(val);
+  boolean sameEntity(final BaseEntityWrapper<?, ?, ?> val) {
+    final int res = super.compareNameClass(val);
     if (res != 0) {
       return false;
     }
@@ -87,7 +88,7 @@ class PropWrapper extends BaseEntityWrapper<PropWrapper,
   }
 
   PropertyReferenceType makeRef() {
-    PropertyReferenceType r = new PropertyReferenceType();
+    final PropertyReferenceType r = new PropertyReferenceType();
 
     r.setBaseProperty(getJaxbElement());
     return r;
@@ -98,7 +99,7 @@ class PropWrapper extends BaseEntityWrapper<PropWrapper,
       return val;
     }
 
-    PropertySelectionType sel = new PropertySelectionType();
+    final PropertySelectionType sel = new PropertySelectionType();
 
     sel.setBaseProperty(getJaxbElement());
 
@@ -116,7 +117,7 @@ class PropWrapper extends BaseEntityWrapper<PropWrapper,
     PropertySelectionType sel = null;
 
     if (params != null) {
-      ParametersSelectionType psel = params.diff(that.params);
+      final ParametersSelectionType psel = params.diff(that.params);
 
       if (psel != null) {
         sel = that.getSelect(sel);
@@ -127,9 +128,9 @@ class PropWrapper extends BaseEntityWrapper<PropWrapper,
 
     if (!equalValue(that)) {
       sel = that.getSelect(sel);
-      PropertyReferenceType ct = new PropertyReferenceType();
+      final PropertyReferenceType ct = new PropertyReferenceType();
 
-      JAXBElement jel = getJaxbElement();
+      final JAXBElement jel = getJaxbElement();
       jel.setValue(globals.matcher.getElementAndValue(getEntity()));
       ct.setBaseProperty(jel);
 
@@ -164,17 +165,17 @@ class PropWrapper extends BaseEntityWrapper<PropWrapper,
         return getName().getLocalPart().compareTo(o.getName().getLocalPart());
       }
 
-      RecurrenceIdPropType thatRid = (RecurrenceIdPropType)o.getEntity();
-      RecurrenceIdPropType thisRid = (RecurrenceIdPropType)getEntity();
+      final RecurrenceIdPropType thatRid = (RecurrenceIdPropType)o.getEntity();
+      final RecurrenceIdPropType thisRid = (RecurrenceIdPropType)getEntity();
 
       /* Get UTC value to compare */
 
       try {
-        String thatUTC = XcalUtil.getUTC(thatRid, globals.tzs);
-        String thisUTC = XcalUtil.getUTC(thisRid, globals.tzs);
+        final String thatUTC = XcalUtil.getUTC(thatRid, globals.tzs);
+        final String thisUTC = XcalUtil.getUTC(thisRid, globals.tzs);
 
         return thatUTC.compareTo(thisUTC);
-      } catch (Throwable t) {
+      } catch (final Throwable t) {
         throw new RuntimeException(t);
       }
     }
@@ -204,14 +205,15 @@ class PropWrapper extends BaseEntityWrapper<PropWrapper,
 
   @Override
   public boolean equals(final Object o) {
+    if (!(o instanceof PropWrapper)) {
+      return false;
+    }
     return compareTo((PropWrapper)o) == 0;
   }
 
   @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("PropWrapper{");
-
-    super.toStringSegment(sb);
+  protected void toStringSegment(final ToString ts) {
+    super.toStringSegment(ts);
 
     /* Just serialize the entity?
     if (params.size() > 0) {
@@ -223,9 +225,5 @@ class PropWrapper extends BaseEntityWrapper<PropWrapper,
     sb.append(getValue());
     sb.append("\"");
     */
-
-    sb.append("}");
-
-    return sb.toString();
   }
 }

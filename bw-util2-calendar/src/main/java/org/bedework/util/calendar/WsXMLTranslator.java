@@ -54,13 +54,17 @@ import ietf.params.xml.ns.icalendar_2.UriPropertyType;
 import ietf.params.xml.ns.icalendar_2.UtcDatetimePropertyType;
 import ietf.params.xml.ns.icalendar_2.UtcOffsetPropertyType;
 import ietf.params.xml.ns.icalendar_2.VcalendarType;
+import net.fortuna.ical4j.data.ContentHandler;
+import net.fortuna.ical4j.data.DefaultContentHandler;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Parameter;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.parameter.Value;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
@@ -72,10 +76,16 @@ import javax.xml.namespace.QName;
  *
  * @author douglm
  */
-public class WsXMLTranslator {
+public class WsXMLTranslator implements Consumer<Calendar> {
   //private Logger log = Logger.getLogger(WsXMLTranslator.class);
 
   private final TimeZoneRegistry tzRegistry;
+  private ContentHandler handler;
+
+  /**
+   * The calendar instance created by the builder.
+   */
+  private Calendar calendar;
 
   /**
    * @param tzRegistry for timezones
@@ -84,44 +94,48 @@ public class WsXMLTranslator {
     this.tzRegistry = tzRegistry;
   }
 
+  @Override
+  public void accept(final Calendar calendar) {
+    this.calendar = calendar;
+  }
+
   /**
    * @param ical xCal Icalendar object
    * @return Calendar object or null for no data
-   * @throws Throwable on fatal error
+   * @throws RuntimeException on fatal error
    */
-  public Calendar fromXcal(final IcalendarType ical) throws Throwable {
-    BuildState bs = new BuildState(tzRegistry);
+  public Calendar fromXcal(final IcalendarType ical) {
+    handler = new DefaultContentHandler(this, tzRegistry);
 
-    bs.setContentHandler(new ContentHandlerImpl(bs));
-
-    List<VcalendarType> vcts = ical.getVcalendar();
+    final List<VcalendarType> vcts = ical.getVcalendar();
     if (vcts.size() == 0) {
       return null;
     }
 
     if (vcts.size() > 1) {
-      throw new Exception("More than one vcalendar");
+      throw new RuntimeException("More than one vcalendar");
     }
 
-    processVcalendar(vcts.get(0), bs);
+    processVcalendar(vcts.get(0), handler);
 
-    return bs.getCalendar();
+    return calendar;
   }
 
   /**
    * @param comp xCal component
    * @return Calendar object or null for no data
-   * @throws Throwable on fatal error
+   * @throws RuntimeException on fatal error
    */
-  public Calendar fromXcomp(final JAXBElement<? extends BaseComponentType> comp) throws Throwable {
-    IcalendarType ical = new IcalendarType();
+  public Calendar fromXcomp(final JAXBElement<
+          ? extends BaseComponentType> comp) {
+    final IcalendarType ical = new IcalendarType();
 
-    List<VcalendarType> vcts = ical.getVcalendar();
+    final List<VcalendarType> vcts = ical.getVcalendar();
 
-    VcalendarType vcal = new VcalendarType();
+    final VcalendarType vcal = new VcalendarType();
     vcts.add(vcal);
 
-    ArrayOfComponents aop = new ArrayOfComponents();
+    final ArrayOfComponents aop = new ArrayOfComponents();
 
     vcal.setComponents(aop);
     aop.getBaseComponent().add(comp);
@@ -130,62 +144,62 @@ public class WsXMLTranslator {
   }
 
   private void processVcalendar(final VcalendarType vcal,
-                                final BuildState bs) throws Throwable {
-    bs.getContentHandler().startCalendar();
+                                final ContentHandler handler) {
+    handler.startCalendar();
 
-    processProperties(vcal.getProperties(), bs);
+    processProperties(vcal.getProperties(), handler);
 
-    processCalcomps(vcal, bs);
+    processCalcomps(vcal, handler);
   }
 
   private void processProperties(final ArrayOfProperties aop,
-                                 final BuildState bs) throws Throwable {
+                                 final ContentHandler handler) {
     if ((aop == null) || (aop.getBasePropertyOrTzid().size() == 0)) {
       return;
     }
 
-    for (JAXBElement<?> e: aop.getBasePropertyOrTzid()) {
+    for (final JAXBElement<?> e: aop.getBasePropertyOrTzid()) {
       processProperty((BasePropertyType)e.getValue(),
-                      e.getName(), bs);
+                      e.getName(), handler);
     }
   }
 
   /* Process all the sub-components of the supplied component */
   private void processCalcomps(final BaseComponentType c,
-                               final BuildState bs) throws Throwable {
-    List<JAXBElement<? extends BaseComponentType>> comps =
+                               final ContentHandler handler) {
+    final List<JAXBElement<? extends BaseComponentType>> comps =
       XcalUtil.getComponents(c);
 
     if (comps == null) {
       return;
     }
 
-    for (JAXBElement<? extends BaseComponentType> el: comps) {
-      processComponent(el.getValue(), bs);
+    for (final JAXBElement<? extends BaseComponentType> el: comps) {
+      processComponent(el.getValue(), handler);
     }
   }
 
   private void processComponent(final BaseComponentType comp,
-                                final BuildState bs) throws Throwable {
+                                final ContentHandler handler) {
     final ComponentInfoIndex cii = ComponentInfoIndex.fromXmlClass(comp.getClass());
 
     if (cii == null) {
-      throw new Exception("Unknown component " + comp.getClass());
+      throw new RuntimeException("Unknown component " + comp.getClass());
     }
 
     final String name = cii.getPname();
-    bs.getContentHandler().startComponent(name);
+    handler.startComponent(name);
 
-    processProperties(comp.getProperties(), bs);
+    processProperties(comp.getProperties(), handler);
 
-    processCalcomps(comp, bs);
+    processCalcomps(comp, handler);
 
-    bs.getContentHandler().endComponent(name);
+    handler.endComponent(name);
   }
 
   private void processProperty(final BasePropertyType prop,
                                final QName elname,
-                               final BuildState bs) throws Throwable {
+                               final ContentHandler handler) {
     /*
     final PropertyInfoIndex pii = PropertyInfoIndex.fromXmlClass(prop.getClass());
 
@@ -214,25 +228,33 @@ public class WsXMLTranslator {
       }
     }
 
-    bs.getContentHandler().startProperty(name);
+    handler.startProperty(name);
 
-    if (aop != null) {
-      for (final JAXBElement<? extends BaseParameterType> e: aop.getBaseParameter()) {
-        final String parName = e.getName().getLocalPart().toUpperCase();
+    try {
+      if (aop != null) {
+        for (final JAXBElement<? extends BaseParameterType> e: aop
+                .getBaseParameter()) {
+          final String parName = e.getName().getLocalPart()
+                                  .toUpperCase();
 
-        if (parName.equals("X-BEDEWORK-WRAPPED-NAME")) {
-          continue;
+          if (parName.equals("X-BEDEWORK-WRAPPED-NAME")) {
+            continue;
+          }
+
+          handler.parameter(parName, getParValue(e.getValue()));
         }
-
-        bs.getContentHandler().parameter(parName, getParValue(e.getValue()));
       }
-    }
 
-    if (!processValue(prop, bs)) {
-      throw new Exception("Bad property " + prop);
-    }
+      if (!processValue(prop, handler)) {
+        throw new RuntimeException("Bad property " + prop);
+      }
 
-    bs.getContentHandler().endProperty(name);
+      handler.endProperty(name);
+    } catch (final RuntimeException rte) {
+      throw rte;
+    } catch (final Throwable t) {
+      throw new RuntimeException(t);
+    }
   }
 
   /**
@@ -265,7 +287,7 @@ public class WsXMLTranslator {
     addRecurEl(rels, "FREQ", r.getFreq());
 
     if (r.getUntil() != null) {
-      UntilRecurType until = r.getUntil();
+      final UntilRecurType until = r.getUntil();
       if (until.getDate() != null) {
         rels.add("UNTIL=" + until.getDate());
       } else {
@@ -290,150 +312,159 @@ public class WsXMLTranslator {
   }
 
   private boolean processValue(final BasePropertyType prop,
-                               final BuildState bs) throws Throwable {
+                               final ContentHandler handler) {
     if (prop instanceof RecurPropertyType) {
-      propVal(bs, fromRecurProperty((RecurPropertyType)prop));
+      propVal(handler, fromRecurProperty((RecurPropertyType)prop));
 
       return true;
     }
 
     if (prop instanceof DurationPropType) {
-      DurationPropType dp = (DurationPropType)prop;
+      final DurationPropType dp = (DurationPropType)prop;
 
-      propVal(bs, dp.getDuration());
+      propVal(handler, dp.getDuration());
 
       return true;
     }
 
     if (prop instanceof TextPropertyType) {
-      TextPropertyType tp = (TextPropertyType)prop;
+      final TextPropertyType tp = (TextPropertyType)prop;
 
-      propVal(bs, tp.getText());
+      propVal(handler, tp.getText());
 
       return true;
     }
 
     if (prop instanceof TextListPropertyType) {
-      TextListPropertyType p = (TextListPropertyType)prop;
+      final TextListPropertyType p = (TextListPropertyType)prop;
 
-      propVal(bs, fromList(p.getText(), false));
+      propVal(handler, fromList(p.getText(), false));
 
       return true;
     }
 
     if (prop instanceof CalAddressPropertyType) {
-      CalAddressPropertyType cap = (CalAddressPropertyType)prop;
+      final CalAddressPropertyType cap = (CalAddressPropertyType)prop;
 
-      propVal(bs, cap.getCalAddress());
+      propVal(handler, cap.getCalAddress());
 
       return true;
     }
 
     if (prop instanceof IntegerPropertyType) {
-      IntegerPropertyType ip = (IntegerPropertyType)prop;
+      final IntegerPropertyType ip = (IntegerPropertyType)prop;
 
-      propVal(bs, String.valueOf(ip.getInteger()));
+      propVal(handler, String.valueOf(ip.getInteger()));
 
       return true;
     }
 
     if (prop instanceof UriPropertyType) {
-      UriPropertyType p = (UriPropertyType)prop;
+      final UriPropertyType p = (UriPropertyType)prop;
 
-      propVal(bs, p.getUri());
+      propVal(handler, p.getUri());
 
       return true;
     }
 
     if (prop instanceof UtcOffsetPropertyType) {
-      UtcOffsetPropertyType p = (UtcOffsetPropertyType)prop;
+      final UtcOffsetPropertyType p = (UtcOffsetPropertyType)prop;
 
-      propVal(bs, p.getUtcOffset());
+      propVal(handler, p.getUtcOffset());
 
       return true;
     }
 
     if (prop instanceof UtcDatetimePropertyType) {
-      UtcDatetimePropertyType p = (UtcDatetimePropertyType)prop;
+      final UtcDatetimePropertyType p = (UtcDatetimePropertyType)prop;
 
-      propVal(bs, XcalUtil.getIcalFormatDateTime(p.getUtcDateTime().toString()));
+      propVal(handler,
+              XcalUtil.getIcalFormatDateTime(p.getUtcDateTime()
+                                              .toString()));
 
       return true;
     }
 
     if (prop instanceof DatetimePropertyType) {
-      DatetimePropertyType p = (DatetimePropertyType)prop;
+      final DatetimePropertyType p = (DatetimePropertyType)prop;
 
-      propVal(bs, XcalUtil.getIcalFormatDateTime(p.getDateTime().toString()));
+      propVal(handler,
+              XcalUtil.getIcalFormatDateTime(p.getDateTime()
+                                              .toString()));
 
       return true;
     }
 
     if (prop instanceof DateDatetimePropertyType) {
-      XcalUtil.DtTzid dtTzid = XcalUtil.getDtTzid((DateDatetimePropertyType)prop);
+      final XcalUtil.DtTzid dtTzid =
+              XcalUtil.getDtTzid((DateDatetimePropertyType)prop);
 
       if (dtTzid.dateOnly) {
-        bs.getContentHandler().parameter(Parameter.VALUE,
-                                         Value.DATE.getValue());
+        try {
+          handler.parameter(Parameter.VALUE,
+                            Value.DATE.getValue());
+        } catch (final URISyntaxException e) {
+          throw new RuntimeException(e);
+        }
       }
 
-      propVal(bs, dtTzid.dt);
+      propVal(handler, dtTzid.dt);
 
       return true;
     }
 
     if (prop instanceof CalscalePropType) {
-      CalscalePropType p = (CalscalePropType)prop;
+      final CalscalePropType p = (CalscalePropType)prop;
 
-      propVal(bs, p.getText().name());
+      propVal(handler, p.getText().name());
 
       return true;
     }
 
     if (prop instanceof AttachPropType) {
-      AttachPropType p = (AttachPropType)prop;
+      final AttachPropType p = (AttachPropType)prop;
 
       if (p.getUri() != null) {
-        propVal(bs, p.getUri());
+        propVal(handler, p.getUri());
       } else {
-        propVal(bs, p.getBinary());
+        propVal(handler, p.getBinary());
       }
 
       return true;
     }
 
     if (prop instanceof GeoPropType) {
-      GeoPropType p = (GeoPropType)prop;
+      final GeoPropType p = (GeoPropType)prop;
 
-      propVal(bs, p.getLatitude() + ";" + p.getLongitude());
+      propVal(handler, p.getLatitude() + ";" + p.getLongitude());
 
       return true;
     }
 
     if (prop instanceof FreebusyPropType) {
-      FreebusyPropType p = (FreebusyPropType)prop;
+      final FreebusyPropType p = (FreebusyPropType)prop;
 
-      propVal(bs, fromList(p.getPeriod(), false));
+      propVal(handler, fromList(p.getPeriod(), false));
 
       return true;
     }
 
     if (prop instanceof TriggerPropType) {
-      TriggerPropType p = (TriggerPropType)prop;
+      final TriggerPropType p = (TriggerPropType)prop;
 
       if (p.getDuration() != null) {
-        propVal(bs, p.getDuration());
+        propVal(handler, p.getDuration());
       } else {
-        propVal(bs, XcalUtil.getIcalFormatDateTime(p.getDateTime().toString()));
+        propVal(handler, XcalUtil.getIcalFormatDateTime(p.getDateTime().toString()));
       }
 
       return true;
     }
 
     if (prop instanceof RequestStatusPropType) {
-      RequestStatusPropType p = (RequestStatusPropType)prop;
+      final RequestStatusPropType p = (RequestStatusPropType)prop;
 
-      StringBuilder sb = new StringBuilder();
+      final StringBuilder sb = new StringBuilder();
 
       sb.append(p.getCode());
       if (p.getDescription() != null) {
@@ -446,7 +477,7 @@ public class WsXMLTranslator {
         sb.append(p.getExtdata());
       }
 
-      propVal(bs, sb.toString());
+      propVal(handler, sb.toString());
 
       return true;
     }
@@ -468,7 +499,7 @@ public class WsXMLTranslator {
       return;
     }
 
-    String val;
+    final String val;
 
     if (o instanceof List) {
       val = fromList((List<?>)o, false);
@@ -482,12 +513,16 @@ public class WsXMLTranslator {
     l.add(name + "=" + val);
   }
 
-  private void propVal(final BuildState bs,
-                       final String val) throws Throwable {
-    bs.getContentHandler().propertyValue(val);
+  private void propVal(final ContentHandler handler,
+                       final String val) {
+    try {
+      handler.propertyValue(val);
+    } catch (final Throwable t) {
+      throw new RuntimeException(t);
+    }
   }
 
-  private String getParValue(final BaseParameterType bpt) throws Throwable {
+  private String getParValue(final BaseParameterType bpt) {
     if (bpt instanceof TextParameterType) {
       return ((TextParameterType)bpt).getText();
     }
@@ -512,7 +547,7 @@ public class WsXMLTranslator {
       return ((UriParameterType)bpt).getUri();
     }
 
-    throw new Exception("Unsupported param type");
+    throw new RuntimeException("Unsupported param type");
   }
 
   private String fromList(final List<?> l, final boolean quote) {
@@ -526,7 +561,7 @@ public class WsXMLTranslator {
       return null;
     }
 
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
     String delim = "";
     String qt = "";
 
@@ -534,7 +569,7 @@ public class WsXMLTranslator {
       qt = "\"";
     }
 
-    for (Object o: l) {
+    for (final Object o: l) {
       sb.append(delim);
       delim = delimChar;
       sb.append(qt);

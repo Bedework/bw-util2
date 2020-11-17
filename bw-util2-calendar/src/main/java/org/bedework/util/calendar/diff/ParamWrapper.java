@@ -18,6 +18,8 @@
 */
 package org.bedework.util.calendar.diff;
 
+import org.bedework.util.misc.ToString;
+
 import ietf.params.xml.ns.icalendar_2.BaseParameterType;
 import org.oasis_open.docs.ws_calendar.ns.soap.ParameterReferenceType;
 import org.oasis_open.docs.ws_calendar.ns.soap.ParameterSelectionType;
@@ -46,8 +48,8 @@ class ParamWrapper extends BaseEntityWrapper<ParamWrapper,
   }
 
   @Override
-  boolean sameEntity(final BaseEntityWrapper val) {
-    int res = super.compareNameClass(val);
+  boolean sameEntity(final BaseEntityWrapper<?, ?, ?> val) {
+    final int res = super.compareNameClass(val);
     if (res != 0) {
       return false;
     }
@@ -56,7 +58,7 @@ class ParamWrapper extends BaseEntityWrapper<ParamWrapper,
   }
 
   ParameterReferenceType makeRef() {
-    ParameterReferenceType r = new ParameterReferenceType();
+    final ParameterReferenceType r = new ParameterReferenceType();
 
     r.setBaseParameter(getJaxbElement());
     return r;
@@ -67,7 +69,7 @@ class ParamWrapper extends BaseEntityWrapper<ParamWrapper,
       return val;
     }
 
-    ParameterSelectionType sel = new ParameterSelectionType();
+    final ParameterSelectionType sel = new ParameterSelectionType();
 
     sel.setBaseParameter(getJaxbElement());
 
@@ -85,7 +87,7 @@ class ParamWrapper extends BaseEntityWrapper<ParamWrapper,
 
     if (!equalValue(that)) {
       sel = that.getSelect(sel);
-      ParameterReferenceType ct = new ParameterReferenceType();
+      final ParameterReferenceType ct = new ParameterReferenceType();
 
       ct.setBaseParameter(getJaxbElement());
 
@@ -134,21 +136,17 @@ class ParamWrapper extends BaseEntityWrapper<ParamWrapper,
 
   @Override
   public boolean equals(final Object o) {
+    if (!(o instanceof ParamWrapper)) {
+      return false;
+    }
+
     return compareTo((ParamWrapper)o) == 0;
   }
 
   @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("ParamWrapper{");
+  protected void toStringSegment(final ToString ts) {
+    super.toStringSegment(ts);
 
-    super.toStringSegment(sb);
-
-    sb.append(", matcher=\"");
-    sb.append(getComparator());
-    sb.append("\"");
-
-    sb.append("}");
-
-    return sb.toString();
+    ts.append("matcher", getComparator());
   }
 }
