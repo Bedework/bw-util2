@@ -24,6 +24,7 @@
     <orderEntry type="library" scope="RUNTIME" name="Maven: com.sun.xml.fastinfoset:FastInfoset:1.2.16" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: jakarta.activation:jakarta.activation-api:1.2.1" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: com.sun.activation:jakarta.activation:1.2.1" level="project" />
+    <orderEntry type="library" name="Maven: org.bedework:bw-util-json:4.0.27" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-util-misc:4.0.27" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-util-logging:4.0.5" level="project" />
     <orderEntry type="library" name="Maven: org.bedework:bw-util-xml:4.0.27" level="project" />

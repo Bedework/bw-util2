@@ -106,6 +106,12 @@
 
       <dependency>
         <groupId>org.bedework</groupId>
+        <artifactId>bw-util-json</artifactId>
+        <version>${bw-util.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.bedework</groupId>
         <artifactId>bw-util-misc</artifactId>
         <version>${bw-util.version}</version>
       </dependency>
