@@ -15,7 +15,7 @@
     <maven.source.plugin.version>2.1.2</maven.source.plugin.version>
 
     <!-- Bedework Versions -->
-    <bw-util.version>4.0.27</bw-util.version>
+    <bw-util.version>4.0.28-SNAPSHOT</bw-util.version>
     <bw-util-logging.version>4.0.5</bw-util-logging.version>
     <bw-xml.version>4.0.10</bw-xml.version>
 
@@ -28,7 +28,7 @@
     <ical4j.version>1.1.4</ical4j.version>
     -->
     <commons.codec.version>1.15</commons.codec.version>
-    <ical4j-vcard.version>1.0.4</ical4j-vcard.version>
+    <ical4j-vcard.version>1.0.5</ical4j-vcard.version>
     <jackson.version>2.10.0</jackson.version>
     <java.jaxb.api.version>2.3.0</java.jaxb.api.version>
     <junit.version>4.13.1</junit.version>
@@ -183,6 +183,7 @@
         <artifactId>bw-ical4j-vcard</artifactId>
         <version>${ical4j-vcard.version}</version>
       </dependency>
+
       <!-- Third Party Libraries -->
 
       <dependency>
