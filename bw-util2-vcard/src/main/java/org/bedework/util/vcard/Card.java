@@ -18,6 +18,8 @@
 */
 package org.bedework.util.vcard;
 
+import org.bedework.util.misc.GeoUri;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser.Feature;
@@ -31,15 +33,23 @@ import net.fortuna.ical4j.vcard.Property;
 import net.fortuna.ical4j.vcard.Property.Id;
 import net.fortuna.ical4j.vcard.VCard;
 import net.fortuna.ical4j.vcard.VCardBuilder;
+import net.fortuna.ical4j.vcard.parameter.Type;
+import net.fortuna.ical4j.vcard.property.Accessible;
+import net.fortuna.ical4j.vcard.property.Address;
+import net.fortuna.ical4j.vcard.property.Geo;
 import net.fortuna.ical4j.vcard.property.Revision;
 import net.fortuna.ical4j.vcard.property.Uid;
+import net.fortuna.ical4j.vcard.property.Url;
 import net.fortuna.ical4j.vcard.property.Version;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.math.BigDecimal;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -175,10 +185,64 @@ public class Card {
   }
 
   /**
+   * @param val String uid
+   */
+  public void setUid(final String val) {
+    uid = val;
+  }
+
+  /**
    * @return String
    */
   public String getUid() {
     return uid;
+  }
+
+  /**
+   * @param poBox post office box address component
+   * @param extended extended address component
+   * @param street street address component
+   * @param locality locality address component
+   * @param region region address component
+   * @param postcode postal code address component
+   * @param country country address component
+   * @param types optional address types
+   */
+  public void setAddress(final String poBox,
+                         final String extended,
+                         final String street,
+                         final String locality,
+                         final String region,
+                         final String postcode,
+                         final String country,
+                         final Type...types) {
+    final Address addr = new Address(poBox, extended, street,
+                                     locality, region, postcode,
+                                     country, types);
+    addProperty(addr);
+  }
+
+  public void setAccessible(final boolean value) {
+    addProperty(new Accessible(value));
+  }
+
+  public void setUrl(final String value) {
+    try {
+      addProperty(new Url(Collections.emptyList(), value));
+    } catch (final URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void setGeoUri(final String value) {
+    if (value == null) {
+      removeProperty(Id.GEO);
+      return;
+    }
+
+    final GeoUri gu = GeoUri.parse(value);
+    final Geo geo = new Geo(BigDecimal.valueOf(gu.getCoordA()),
+                            BigDecimal.valueOf(gu.getCoordB()));
   }
 
   /**
@@ -206,6 +270,16 @@ public class Card {
    */
   public Property findProperty(final Id id) {
     return vcard.getProperty(id);
+  }
+
+  /**
+   * @param id of property
+   */
+  public void removeProperty(final Id id) {
+    final Property p = findProperty(id);
+    if (p != null) {
+      vcard.getProperties().remove(p);
+    }
   }
 
   /**
