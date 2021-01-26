@@ -683,6 +683,10 @@ public class PropertyIndex implements Serializable {
                           XBwCategoriesPropType.class,
                           IS_MULTI, event_Todo_Journal_Alarm),
 
+    CONCEPT(XcalTags.categories,
+            CategoriesPropType.class,
+            IS_SINGLE, event_Todo_Journal_Alarm),
+
     /** classification */
     CLASS(XcalTags._class,
           ClassPropType.class, null,
@@ -1098,7 +1102,7 @@ public class PropertyIndex implements Serializable {
             VersionPropType.class,
             IS_SINGLE, vcalendarOnly),
 
-    /** ------------------------ Bedework only properties ----------- */
+    /* ------------------------ Bedework only properties ----------- */
 
     /** ACL */
     ACL(BedeworkServerTags.xprop,
