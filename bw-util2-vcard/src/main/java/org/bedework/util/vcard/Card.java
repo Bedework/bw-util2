@@ -243,6 +243,7 @@ public class Card {
     final GeoUri gu = GeoUri.parse(value);
     final Geo geo = new Geo(BigDecimal.valueOf(gu.getCoordA()),
                             BigDecimal.valueOf(gu.getCoordB()));
+    addProperty(geo);
   }
 
   /**
