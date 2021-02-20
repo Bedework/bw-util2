@@ -28,7 +28,6 @@ import net.fortuna.ical4j.vcard.PropertyFactoryRegistry;
 import net.fortuna.ical4j.vcard.VCard;
 import net.fortuna.ical4j.vcard.property.Xproperty;
 import net.fortuna.ical4j.vcard.property.Xproperty.ExtendedFactory;
-import org.apache.commons.codec.DecoderException;
 
 import java.net.URISyntaxException;
 import java.text.ParseException;
@@ -172,8 +171,8 @@ public class BuildState {
       } else {
         property = propertyFactory.createProperty(group, params, value);
       }
-    } catch (final DecoderException de) {
-      throw new ParseException(de.getMessage(), 0);
+    } catch (final Throwable t) {
+      throw new ParseException(t.getMessage(), 0);
     }
   }
 
