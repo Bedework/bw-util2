@@ -103,10 +103,7 @@
             </moduleDependency>
 
             <moduleDependency>
-              <name>org.bedework.xml.calws.soap</name>
-            </moduleDependency>
-            <moduleDependency>
-              <name>org.bedework.xml.icalendar</name>
+              <name>org.bedework.xml</name>
             </moduleDependency>
 
             <!-- ============== generated elsewhere ========== -->

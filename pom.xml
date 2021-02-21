@@ -28,8 +28,7 @@
     <ical4j.artifactId>ical4j</ical4j.artifactId>
     <ical4j.version>1.1.4</ical4j.version>
     -->
-    <commons-codec.version>1.15</commons-codec.version>
-    <ical4j-vcard.version>1.0.5</ical4j-vcard.version>
+    <ical4j-vcard.version>1.0.6-SNAPSHOT</ical4j-vcard.version>
     <jackson.version>2.10.0</jackson.version>
     <java.jaxb.api.version>2.3.0</java.jaxb.api.version>
     <junit.version>4.13.1</junit.version>
@@ -165,12 +164,6 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-collections4</artifactId>
         <version>4.1</version>
-      </dependency>
-
-      <dependency>
-        <groupId>commons-codec</groupId>
-        <artifactId>commons-codec</artifactId>
-        <version>${commons-codec.version}</version>
       </dependency>
 
       <dependency>

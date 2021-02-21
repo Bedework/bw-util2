@@ -43,11 +43,6 @@
     </dependency>
 
     <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>org.bedework</groupId>
       <artifactId>bw-ical4j-vcard</artifactId>
     </dependency>
@@ -80,16 +75,6 @@
 
         <configuration>
           <moduleName>org.bedework.util2.vcard</moduleName>
-
-          <jarDependencies>
-            <jarDependency>
-              <moduleName>org.bedework.commons-codec</moduleName>
-              <groupId>commons-codec</groupId>
-              <artifactId>commons-codec</artifactId>
-              <version>${commons-codec.version}</version>
-              <type>jar</type>
-            </jarDependency>
-          </jarDependencies>
 
           <moduleDependencies>
             <moduleDependency>
