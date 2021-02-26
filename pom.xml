@@ -17,6 +17,7 @@
     <!-- Bedework Versions -->
     <bw-util.version>4.0.28-SNAPSHOT</bw-util.version>
     <bw-util-logging.version>4.0.5</bw-util-logging.version>
+    <bw-util-tz.version>4.1.1-SNAPSHOT</bw-util-tz.version>
     <bw-xml.version>4.0.10</bw-xml.version>
     <bw-util-deploy.version>4.0.28-SNAPSHOT</bw-util-deploy.version>
 
@@ -114,6 +115,12 @@
         <groupId>org.bedework</groupId>
         <artifactId>bw-util-misc</artifactId>
         <version>${bw-util.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.bedework</groupId>
+        <artifactId>bw-util-tz</artifactId>
+        <version>${bw-util-tz.version}</version>
       </dependency>
 
       <dependency>
