@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.bedework</groupId>
-        <artifactId>bw-util2</artifactId>
-        <version>4.0.7-SNAPSHOT</version>
-    </parent>
+  <parent>
+    <groupId>org.bedework</groupId>
+    <artifactId>bw-util2</artifactId>
+    <version>4.0.7-SNAPSHOT</version>
+  </parent>
 
-    <artifactId>bw-util2-vcard</artifactId>
+  <artifactId>bw-util2-vcard</artifactId>
 
   <packaging>jar</packaging>
 
@@ -57,56 +57,4 @@
       <artifactId>jaxb-api</artifactId>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.bedework</groupId>
-        <artifactId>bw-util-maven-deploy-wfmodule</artifactId>
-        <version>${bw-util-deploy.version}</version>
-        <executions>
-          <execution>
-            <phase>install</phase>
-            <goals>
-              <goal>bw-deploy-wfmodule</goal>
-            </goals>
-          </execution>
-        </executions>
-
-        <configuration>
-          <moduleName>org.bedework.util2.vcard</moduleName>
-
-          <moduleDependencies>
-            <moduleDependency>
-              <name>org.bedework.util.json</name>
-            </moduleDependency>
-            <moduleDependency>
-              <name>org.bedework.util.misc</name>
-            </moduleDependency>
-            <moduleDependency>
-              <name>org.bedework.util.xml</name>
-            </moduleDependency>
-
-            <moduleDependency>
-              <name>org.bedework.util2.calendar</name>
-            </moduleDependency>
-
-            <!-- ============== generated elsewhere ========== -->
-            <moduleDependency>
-              <name>org.bedework.ical4j</name>
-            </moduleDependency>
-            <moduleDependency>
-              <name>org.bedework.ical4j-vcard</name>
-            </moduleDependency>
-            <moduleDependency>
-              <name>wildflyee.api</name>
-            </moduleDependency>
-            <moduleDependency>
-              <name>com.fasterxml.jackson.core.jackson-core</name>
-            </moduleDependency>
-          </moduleDependencies>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>

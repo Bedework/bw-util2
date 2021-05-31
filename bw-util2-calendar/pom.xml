@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.bedework</groupId>
-        <artifactId>bw-util2</artifactId>
-        <version>4.0.7-SNAPSHOT</version>
-    </parent>
+  <parent>
+    <groupId>org.bedework</groupId>
+    <artifactId>bw-util2</artifactId>
+    <version>4.0.7-SNAPSHOT</version>
+  </parent>
 
-    <artifactId>bw-util2-calendar</artifactId>
+  <artifactId>bw-util2-calendar</artifactId>
 
   <packaging>jar</packaging>
 
@@ -62,70 +62,4 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.bedework</groupId>
-        <artifactId>bw-util-maven-deploy-wfmodule</artifactId>
-        <version>${bw-util-deploy.version}</version>
-        <executions>
-          <execution>
-            <phase>install</phase>
-            <goals>
-              <goal>bw-deploy-wfmodule</goal>
-            </goals>
-          </execution>
-        </executions>
-
-        <configuration>
-          <moduleName>org.bedework.util2.calendar</moduleName>
-
-          <jarDependencies>
-            <jarDependency>
-              <moduleName>org.bedework.com.fasterxml.jackson.core.databind</moduleName>
-              <groupId>com.fasterxml.jackson.core</groupId>
-              <artifactId>jackson-databind</artifactId>
-              <version>${jackson.version}</version>
-              <type>jar</type>
-              <moduleDependencies>
-                <moduleDependency>
-                  <name>com.fasterxml.jackson.core.jackson-core</name>
-                </moduleDependency>
-                <moduleDependency>
-                  <name>org.bedework.com.fasterxml.jackson.core.annotations</name>
-                </moduleDependency>
-              </moduleDependencies>
-            </jarDependency>
-          </jarDependencies>
-
-          <moduleDependencies>
-            <moduleDependency>
-              <name>org.bedework.util.misc</name>
-            </moduleDependency>
-
-            <moduleDependency>
-              <name>org.bedework.util.tz</name>
-            </moduleDependency>
-
-            <moduleDependency>
-              <name>org.bedework.util.xml</name>
-            </moduleDependency>
-
-            <moduleDependency>
-              <name>org.bedework.xml</name>
-            </moduleDependency>
-
-            <!-- ============== generated elsewhere ========== -->
-            <moduleDependency>
-              <name>org.bedework.ical4j</name>
-            </moduleDependency>
-            <moduleDependency>
-              <name>wildflyee.api</name>
-            </moduleDependency>
-          </moduleDependencies>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>
