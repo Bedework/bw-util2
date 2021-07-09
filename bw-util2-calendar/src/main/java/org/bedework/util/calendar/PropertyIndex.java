@@ -755,6 +755,12 @@ public class PropertyIndex implements Serializable {
              DataType.DURATION,
              IS_SINGLE, event_Todo_Freebusy_Alarm),
 
+    /** Estimated duration of task */
+    ESTIMATED_DURATION(XcalTags.duration,
+             DurationPropType.class,
+             DataType.DURATION,
+             IS_SINGLE, todoOnly),
+
     /** Exception date */
     EXDATE(XcalTags.exdate,
            ExdatePropType.class,
