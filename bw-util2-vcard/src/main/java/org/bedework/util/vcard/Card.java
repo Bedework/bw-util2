@@ -25,7 +25,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import net.fortuna.ical4j.data.FoldingWriter;
 import net.fortuna.ical4j.model.DateTime;
-import net.fortuna.ical4j.model.Escapable;
+import net.fortuna.ical4j.model.Encodable;
 import net.fortuna.ical4j.model.property.LastModified;
 import net.fortuna.ical4j.util.Strings;
 import net.fortuna.ical4j.vcard.Parameter;
@@ -628,7 +628,7 @@ public class Card {
     }
     wtr.write(':');
 
-    if (prop instanceof Escapable) {
+    if (prop instanceof Encodable) {
       wtr.write(Strings.escape(Strings.valueOf(prop.getValue())));
     }
     else {
