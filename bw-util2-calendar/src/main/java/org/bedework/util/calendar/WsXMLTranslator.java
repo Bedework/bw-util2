@@ -150,6 +150,12 @@ public class WsXMLTranslator implements Consumer<Calendar> {
     processProperties(vcal.getProperties(), handler);
 
     processCalcomps(vcal, handler);
+
+    try {
+      handler.endCalendar();
+    } catch (final Throwable t) {
+      throw new RuntimeException(t);
+    }
   }
 
   private void processProperties(final ArrayOfProperties aop,
