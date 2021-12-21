@@ -14,6 +14,13 @@
   <description>Utility classes and methods with dependencies</description>
   <url>https://github.com/Bedework/bw-util2</url>
 
+  <scm>
+    <connection>scm:git:git@github.com:Bedework/bw-util2.git</connection>
+    <developerConnection>scm:git:git@github.com:Bedework/bw-util2.git</developerConnection>
+    <url>https://github.com/Bedework/bw-util2</url>
+    <tag>bw-util2-4.0.0</tag>
+  </scm>
+
   <modules>
     <module>bw-util2-calendar</module>
     <module>bw-util2-vcard</module>
