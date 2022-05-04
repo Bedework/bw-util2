@@ -692,6 +692,11 @@ public class PropertyIndex implements Serializable {
           ClassPropType.class, null,
           IS_SINGLE, event_Todo_Journal),
 
+    /** String color */
+    COLOR(XcalTags.color,
+            null,
+            IS_MULTI, notAlarm),
+
     /** String comment */
     COMMENT(XcalTags.comment,
             CommentPropType.class,
@@ -1459,6 +1464,10 @@ public class PropertyIndex implements Serializable {
                 IS_SINGLE, allComponents),
 
     ACCESSIBLE_FLD(BedeworkServerTags.xprop,
+                null,
+                IS_SINGLE, allComponents),
+
+    LOCTYPE_FLD(BedeworkServerTags.xprop,
                 null,
                 IS_SINGLE, allComponents),
 
