@@ -693,9 +693,9 @@ public class PropertyIndex implements Serializable {
           IS_SINGLE, event_Todo_Journal),
 
     /** String color */
-    COLOR(XcalTags.color,
-            null,
-            IS_MULTI, notAlarm),
+    COLOR(BedeworkServerTags.xprop,
+          null,
+          IS_MULTI, notAlarm),
 
     /** String comment */
     COMMENT(XcalTags.comment,
@@ -934,6 +934,11 @@ public class PropertyIndex implements Serializable {
         UrlPropType.class,
         DataType.URI,
         IS_SINGLE, event_Todo_Journal_Freebusy),
+
+    /** treat x-properties as a single multi-valued property */
+    VLOCATION(BedeworkServerTags.xprop,
+              null,
+              IS_MULTI, allComponents),
 
     /** treat x-properties as a single multi-valued property */
     XPROP(BedeworkServerTags.xprop,
@@ -1468,6 +1473,10 @@ public class PropertyIndex implements Serializable {
                 IS_SINGLE, allComponents),
 
     LOCTYPE_FLD(BedeworkServerTags.xprop,
+                null,
+                IS_SINGLE, allComponents),
+
+    COUNTRY_FLD(BedeworkServerTags.xprop,
                 null,
                 IS_SINGLE, allComponents),
 
