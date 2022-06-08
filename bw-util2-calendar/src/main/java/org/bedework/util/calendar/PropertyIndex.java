@@ -467,6 +467,11 @@ public class PropertyIndex implements Serializable {
     DIR("DIR"),
 
     /**
+     * Directory entry.
+     */
+    EMAIL("EMAIL"),
+
+    /**
      * Inline encoding.
      */
     ENCODING("ENCODING"),
