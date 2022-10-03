@@ -690,7 +690,7 @@ public class PropertyIndex implements Serializable {
 
     CONCEPT(XcalTags.categories,
             CategoriesPropType.class,
-            IS_SINGLE, event_Todo_Journal_Alarm),
+            IS_MULTI, event_Todo_Journal_Alarm),
 
     /** classification */
     CLASS(XcalTags._class,
