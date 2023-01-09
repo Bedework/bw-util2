@@ -1517,6 +1517,10 @@ public class PropertyIndex implements Serializable {
                  null,
                  IS_SINGLE, allComponents),
 
+    LOC_DONOTUSE_FLD(BedeworkServerTags.xprop,
+                     null,
+                     IS_SINGLE, allComponents),
+
     LOC_COMBINED_VALUES(BedeworkServerTags.xprop,
                         null,
                         IS_SINGLE, allComponents),
