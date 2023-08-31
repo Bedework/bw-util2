@@ -251,8 +251,13 @@ public class WsXMLTranslator implements Consumer<Calendar> {
         }
       }
 
-      if (!processValue(prop, handler)) {
-        throw new RuntimeException("Bad property " + prop);
+      try {
+        if (!processValue(prop, handler)) {
+          throw new RuntimeException("Bad property " + name + ": " + prop);
+        }
+      } catch (final Throwable t) {
+        error("Bad property " + name + ": " + prop);
+        throw new RuntimeException(t);
       }
 
       handler.endProperty(name);
@@ -343,8 +348,11 @@ public class WsXMLTranslator implements Consumer<Calendar> {
 
     if (prop instanceof TextListPropertyType) {
       final TextListPropertyType p = (TextListPropertyType)prop;
+      final var val = fromList(p.getText(), false);
 
-      propVal(handler, fromList(p.getText(), false));
+      if (val != null) {
+        propVal(handler, val);
+      }
 
       return true;
     }
@@ -524,6 +532,9 @@ public class WsXMLTranslator implements Consumer<Calendar> {
     try {
       handler.propertyValue(val);
     } catch (final Throwable t) {
+      if (t instanceof RuntimeException) {
+        throw (RuntimeException)t;
+      }
       throw new RuntimeException(t);
     }
   }
@@ -611,6 +622,13 @@ public class WsXMLTranslator implements Consumer<Calendar> {
    */
   public static void error(final Throwable t) {
     getLog().error(t);
+  }
+
+  /**
+   * @param msg message
+   */
+  public static void error(final String msg) {
+    getLog().error(msg);
   }
 
   /**
