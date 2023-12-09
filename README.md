@@ -39,8 +39,45 @@ For full details, see [Sonatype's documentation for using Maven to publish relea
   * Move bw-util/bw-util-calendar and bw-util/bw-util-vcard into this project
 
 ### 4.0.6
-    * Update javadoc plugin config
-    * Bump jackson version
-    * Updates for chnages to vpoll spec. Using participant not vvoter. Update to ical4j version and many related changes
-    * Use regular expressions to parse date time values in XcalUtil.getIcalFormatDateTime. Return null for bad values or null.
-    * Remove some references to log4j
+* Update javadoc plugin config
+* Bump jackson version
+* Updates for chnages to vpoll spec. Using participant not vvoter. Update to ical4j version and many related changes
+* Use regular expressions to parse date time values in XcalUtil.getIcalFormatDateTime. Return null for bad values or null.
+* Remove some references to log4j
+
+#### 4.0.7
+* Update library versions
+* Move a bunch of vcard related code from carddav into common utility project
+* Add methods to allow easier setting of properties.
+* Handle CONCEPT
+* Handle uid and fix geo
+* Move some icalspecific code into util2.IcalendarUtil
+
+#### 4.0.8
+* Update library versions
+
+#### 4.0.9
+* Update library versions
+* bw-util version and add ESTIMATED-DURATION support
+
+#### 4.0.10
+* Update library versions
+
+#### 4.0.11
+* Update library versions
+
+#### 4.0.12
+* Update library versions
+* Fix WsXMLTranslator
+
+#### 5.0.0
+* Use bedework parent
+* Update library versions
+
+#### 5.0.1
+* Update library versions
+* Changes for vlocation
+* Add EMAIL parameter to index
+* Add a concept entity with a couple of methods and use it.
+* Add a do not use flag to locations
+* Add more information to message to identify property.
