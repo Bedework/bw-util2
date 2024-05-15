@@ -974,6 +974,7 @@ public class IcalToXcal {
     if (until != null) {
       final UntilRecurType u = new UntilRecurType();
       XcalUtil.initUntilRecur(u, until.toString());
+      rt.setUntil(u);
     }
 
     if (r.getInterval() > 0) {

@@ -302,7 +302,9 @@ public class WsXMLTranslator implements Consumer<Calendar> {
       if (until.getDate() != null) {
         rels.add("UNTIL=" + until.getDate());
       } else {
-        rels.add("UNTIL=" + until.getDateTime());
+        rels.add("UNTIL=" +
+                         XcalUtil.getIcalFormatDateTime(
+                                 until.getDateTime()));
       }
     }
 
