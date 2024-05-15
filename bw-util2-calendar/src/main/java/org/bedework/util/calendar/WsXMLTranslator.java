@@ -108,7 +108,7 @@ public class WsXMLTranslator implements Consumer<Calendar> {
     handler = new DefaultContentHandler(this, tzRegistry);
 
     final List<VcalendarType> vcts = ical.getVcalendar();
-    if (vcts.size() == 0) {
+    if (vcts.isEmpty()) {
       return null;
     }
 
@@ -160,7 +160,7 @@ public class WsXMLTranslator implements Consumer<Calendar> {
 
   private void processProperties(final ArrayOfProperties aop,
                                  final ContentHandler handler) {
-    if ((aop == null) || (aop.getBasePropertyOrTzid().size() == 0)) {
+    if ((aop == null) || (aop.getBasePropertyOrTzid().isEmpty())) {
       return;
     }
 
@@ -326,30 +326,25 @@ public class WsXMLTranslator implements Consumer<Calendar> {
 
   private boolean processValue(final BasePropertyType prop,
                                final ContentHandler handler) {
-    if (prop instanceof RecurPropertyType) {
-      propVal(handler, fromRecurProperty((RecurPropertyType)prop));
+    if (prop instanceof final RecurPropertyType rp) {
+      propVal(handler, fromRecurProperty(rp));
 
       return true;
     }
 
-    if (prop instanceof DurationPropType) {
-      final DurationPropType dp = (DurationPropType)prop;
-
+    if (prop instanceof final DurationPropType dp) {
       propVal(handler, dp.getDuration());
 
       return true;
     }
 
-    if (prop instanceof TextPropertyType) {
-      final TextPropertyType tp = (TextPropertyType)prop;
-
+    if (prop instanceof final TextPropertyType tp) {
       propVal(handler, tp.getText());
 
       return true;
     }
 
-    if (prop instanceof TextListPropertyType) {
-      final TextListPropertyType p = (TextListPropertyType)prop;
+    if (prop instanceof final TextListPropertyType p) {
       final var val = fromList(p.getText(), false);
 
       if (val != null) {
@@ -359,41 +354,31 @@ public class WsXMLTranslator implements Consumer<Calendar> {
       return true;
     }
 
-    if (prop instanceof CalAddressPropertyType) {
-      final CalAddressPropertyType cap = (CalAddressPropertyType)prop;
-
+    if (prop instanceof final CalAddressPropertyType cap) {
       propVal(handler, cap.getCalAddress());
 
       return true;
     }
 
-    if (prop instanceof IntegerPropertyType) {
-      final IntegerPropertyType ip = (IntegerPropertyType)prop;
-
+    if (prop instanceof final IntegerPropertyType ip) {
       propVal(handler, String.valueOf(ip.getInteger()));
 
       return true;
     }
 
-    if (prop instanceof UriPropertyType) {
-      final UriPropertyType p = (UriPropertyType)prop;
-
+    if (prop instanceof final UriPropertyType p) {
       propVal(handler, p.getUri());
 
       return true;
     }
 
-    if (prop instanceof UtcOffsetPropertyType) {
-      final UtcOffsetPropertyType p = (UtcOffsetPropertyType)prop;
-
+    if (prop instanceof final UtcOffsetPropertyType p) {
       propVal(handler, p.getUtcOffset());
 
       return true;
     }
 
-    if (prop instanceof UtcDatetimePropertyType) {
-      final UtcDatetimePropertyType p = (UtcDatetimePropertyType)prop;
-
+    if (prop instanceof final UtcDatetimePropertyType p) {
       propVal(handler,
               XcalUtil.getIcalFormatDateTime(p.getUtcDateTime()
                                               .toString()));
@@ -401,9 +386,7 @@ public class WsXMLTranslator implements Consumer<Calendar> {
       return true;
     }
 
-    if (prop instanceof DatetimePropertyType) {
-      final DatetimePropertyType p = (DatetimePropertyType)prop;
-
+    if (prop instanceof final DatetimePropertyType p) {
       propVal(handler,
               XcalUtil.getIcalFormatDateTime(p.getDateTime()
                                               .toString()));
@@ -429,17 +412,13 @@ public class WsXMLTranslator implements Consumer<Calendar> {
       return true;
     }
 
-    if (prop instanceof CalscalePropType) {
-      final CalscalePropType p = (CalscalePropType)prop;
-
+    if (prop instanceof final CalscalePropType p) {
       propVal(handler, p.getText().name());
 
       return true;
     }
 
-    if (prop instanceof AttachPropType) {
-      final AttachPropType p = (AttachPropType)prop;
-
+    if (prop instanceof final AttachPropType p) {
       if (p.getUri() != null) {
         propVal(handler, p.getUri());
       } else {
@@ -449,25 +428,19 @@ public class WsXMLTranslator implements Consumer<Calendar> {
       return true;
     }
 
-    if (prop instanceof GeoPropType) {
-      final GeoPropType p = (GeoPropType)prop;
-
+    if (prop instanceof final GeoPropType p) {
       propVal(handler, p.getLatitude() + ";" + p.getLongitude());
 
       return true;
     }
 
-    if (prop instanceof FreebusyPropType) {
-      final FreebusyPropType p = (FreebusyPropType)prop;
-
+    if (prop instanceof final FreebusyPropType p) {
       propVal(handler, fromList(p.getPeriod(), false));
 
       return true;
     }
 
-    if (prop instanceof TriggerPropType) {
-      final TriggerPropType p = (TriggerPropType)prop;
-
+    if (prop instanceof final TriggerPropType p) {
       if (p.getDuration() != null) {
         propVal(handler, p.getDuration());
       } else {
@@ -477,9 +450,7 @@ public class WsXMLTranslator implements Consumer<Calendar> {
       return true;
     }
 
-    if (prop instanceof RequestStatusPropType) {
-      final RequestStatusPropType p = (RequestStatusPropType)prop;
-
+    if (prop instanceof final RequestStatusPropType p) {
       final StringBuilder sb = new StringBuilder();
 
       sb.append(p.getCode());
