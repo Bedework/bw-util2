@@ -14,12 +14,13 @@ import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.property.Method;
 import net.fortuna.ical4j.model.property.ProdId;
-import net.fortuna.ical4j.model.property.Version;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.TreeSet;
+
+import static net.fortuna.ical4j.model.property.immutable.ImmutableVersion.VERSION_2_0;
 
 /**
  * User: mike Date: 2/26/21 Time: 14:22
@@ -37,7 +38,7 @@ public class IcalendarUtil {
     final PropertyList<Property> pl = cal.getProperties();
 
     pl.add(new ProdId(prodId));
-    pl.add(Version.VERSION_2_0);
+    pl.add(VERSION_2_0);
 
     if ((methodType > ScheduleMethods.methodTypeNone) &&
             (methodType < ScheduleMethods.methodTypeUnknown)) {
