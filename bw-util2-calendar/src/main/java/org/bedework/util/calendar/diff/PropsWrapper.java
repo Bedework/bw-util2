@@ -34,7 +34,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 /** This class wraps an array of properties. Properties are ordered by the
- * comparator so we can step through them and try to produce a set of changes for
+ * comparator, so we can step through them and try to produce a set of changes for
  * the target - when reading this is the source that is the target.
  *
  * @author Mike Douglass
@@ -68,7 +68,7 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
   @SuppressWarnings("unchecked")
   @Override
   Set<PropWrapper> getWrapped(final JAXBElement<? extends BasePropertyType> el) {
-    QName nm = el.getName();
+    final QName nm = el.getName();
 
     /* We skip certain properties as they only appear on one side
      * If this is one we skip return null.
@@ -77,10 +77,11 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
       return null;
     }
 
-    Set<PropWrapper> res = new TreeSet<>();
-    List<BasePropertyType> normed = globals.matcher.getNormalized(el.getValue());
+    final Set<PropWrapper> res = new TreeSet<>();
+    final List<BasePropertyType> normed =
+            globals.matcher.getNormalized(el.getValue());
 
-    for (BasePropertyType bp: normed) {
+    for (final BasePropertyType bp: normed) {
       res.add(new PropWrapper(this, nm, bp));
     }
 
@@ -109,7 +110,7 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
         continue;
       }
 
-      int ncmp = thisOne.compareNames(thatOne);
+      final int ncmp = thisOne.compareNames(thatOne);
 
       if (ncmp == 0) {
         /* names match - scan down that side to see if we can find a matching
@@ -195,7 +196,7 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
         //try to match new to remaining old
 
         while (nextThatI < that.size()) {
-          PropWrapper nextThatOne = that.getTarray()[nextThatI];
+          final PropWrapper nextThatOne = that.getTarray()[nextThatI];
 
           if (thisOne.compareNames(nextThatOne) != 0) {
             // Into the next property
@@ -228,7 +229,7 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
         int nextThisI = thisI + 1;
 
         while (nextThisI < this.size()) {
-          PropWrapper nextThisOne = getTarray()[nextThisI];
+          final PropWrapper nextThisOne = getTarray()[nextThisI];
 
           if (nextThisOne.compareNames(thatOne) != 0) {
             // Into the next property
@@ -276,7 +277,7 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
     while (thisI < size()) {
       // Extra ones in the new object
 
-      PropWrapper thisOne = getTarray()[thisI];
+      final PropWrapper thisOne = getTarray()[thisI];
 
       if (debug()) {
         debug("Adding "+ thisOne.getMappedName());
@@ -288,7 +289,7 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
     while ((that != null) && (thatI < that.size())) {
       // Extra ones in the target
 
-      PropWrapper thatOne = that.getTarray()[thatI];
+      final PropWrapper thatOne = that.getTarray()[thatI];
 
       if (debug()) {
         debug("Removing "+ thatOne.getMappedName());
@@ -311,7 +312,7 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
 
   PropertiesSelectionType add(final PropertiesSelectionType sel,
                               final PropertyReferenceType val) {
-    PropertiesSelectionType csel = getSelect(sel);
+    final PropertiesSelectionType csel = getSelect(sel);
 
     csel.getAdd().add(val);
 
@@ -320,7 +321,7 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
 
   PropertiesSelectionType remove(final PropertiesSelectionType sel,
                                  final PropertyReferenceType val) {
-    PropertiesSelectionType csel = getSelect(sel);
+    final PropertiesSelectionType csel = getSelect(sel);
 
     csel.getRemove().add(val);
 
@@ -329,7 +330,7 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
 
   PropertiesSelectionType select(final PropertiesSelectionType sel,
                                  final PropertySelectionType val) {
-    PropertiesSelectionType csel = getSelect(sel);
+    final PropertiesSelectionType csel = getSelect(sel);
 
     csel.getProperty().add(val);
 
@@ -337,7 +338,7 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
   }
 
   @Override
-  public int compareTo(@SuppressWarnings("NullableProblems") final PropsWrapper that) {
+  public int compareTo(final PropsWrapper that) {
     if (size() < that.size()) {
       return -1;
     }
@@ -346,12 +347,12 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
       return 1;
     }
 
-    Iterator<PropWrapper> it = that.getEls().iterator();
+    final Iterator<PropWrapper> it = that.getEls().iterator();
 
-    for (PropWrapper p: getEls()) {
-      PropWrapper thatP = it.next();
+    for (final PropWrapper p: getEls()) {
+      final PropWrapper thatP = it.next();
 
-      int res = p.compareTo(thatP);
+      final int res = p.compareTo(thatP);
 
       if (res != 0) {
         return res;
@@ -365,7 +366,7 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
   public int hashCode() {
     int hc = size() + 1;
 
-    for (PropWrapper p: getEls()) {
+    for (final PropWrapper p: getEls()) {
       hc += p.hashCode();
     }
 
@@ -374,6 +375,9 @@ class PropsWrapper extends BaseSetWrapper<PropWrapper, CompWrapper,
 
   @Override
   public boolean equals(final Object o) {
+    if (!(o instanceof PropsWrapper)) {
+      return false;
+    }
     return compareTo((PropsWrapper)o) == 0;
   }
 
