@@ -50,6 +50,7 @@ import ietf.params.xml.ns.icalendar_2.DtstampPropType;
 import ietf.params.xml.ns.icalendar_2.DtstartPropType;
 import ietf.params.xml.ns.icalendar_2.DuePropType;
 import ietf.params.xml.ns.icalendar_2.DurationPropType;
+import ietf.params.xml.ns.icalendar_2.ExdatePropType;
 import ietf.params.xml.ns.icalendar_2.ExrulePropType;
 import ietf.params.xml.ns.icalendar_2.FbtypeParamType;
 import ietf.params.xml.ns.icalendar_2.FreebusyPropType;
@@ -130,6 +131,7 @@ import net.fortuna.ical4j.model.component.VToDo;
 import net.fortuna.ical4j.model.parameter.TzId;
 import net.fortuna.ical4j.model.parameter.Value;
 import net.fortuna.ical4j.model.property.Categories;
+import net.fortuna.ical4j.model.property.ExRule;
 import net.fortuna.ical4j.model.property.FreeBusy;
 import net.fortuna.ical4j.model.property.Geo;
 import net.fortuna.ical4j.model.property.PercentComplete;
@@ -466,14 +468,17 @@ public class IcalToXcal {
         return of.createDuration(dur);
 
       case EXDATE:
-        /* ------------------- ExDate --below------------ */
-        return null;
+        /* ------------------- ExDate -------------------- */
+        final ExdatePropType exdate =
+                (ExdatePropType)makeDateDatetime(new ExdatePropType(),
+                                                  prop);
+        return of.createExdate(exdate);
 
       case EXRULE:
         /* ------------------- ExRule --below------------- */
 
         final ExrulePropType er = new ExrulePropType();
-        er.setRecur(doRecur(((RRule)prop).getRecur()));
+        er.setRecur(doRecur(((ExRule)prop).getRecur()));
 
         return of.createExrule(er);
 
