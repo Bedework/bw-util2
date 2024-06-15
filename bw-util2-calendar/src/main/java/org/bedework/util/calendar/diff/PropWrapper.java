@@ -158,15 +158,13 @@ class PropWrapper extends BaseEntityWrapper<PropWrapper,
 
   @Override
   public int compareTo(final PropWrapper o) {
-    if (getEntity() instanceof RecurrenceIdPropType) {
+    if (getEntity() instanceof final RecurrenceIdPropType thisRid) {
       /* Special case this one as the calculated UTC is what matters.
        */
-      if (!(o.getEntity() instanceof RecurrenceIdPropType)) {
-        return getName().getLocalPart().compareTo(o.getName().getLocalPart());
+      if (!(o.getEntity() instanceof final RecurrenceIdPropType thatRid)) {
+        return getName().getLocalPart()
+                        .compareTo(o.getName().getLocalPart());
       }
-
-      final RecurrenceIdPropType thatRid = (RecurrenceIdPropType)o.getEntity();
-      final RecurrenceIdPropType thisRid = (RecurrenceIdPropType)getEntity();
 
       /* Get UTC value to compare */
 
