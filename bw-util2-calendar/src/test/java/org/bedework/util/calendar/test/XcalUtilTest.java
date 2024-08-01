@@ -5,12 +5,17 @@ package org.bedework.util.calendar.test;
 
 import org.bedework.util.calendar.XcalUtil;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * User: mike Date: 1/22/20 Time: 17:11
  */
-public class XcalUtilTest extends TestCase {
+public class XcalUtilTest {
+  @Test
   public void testGetIcalFormatDateTime() {
     // Good dates - if date contains "-" then next one in array
     // should be result. if not result should equal value
@@ -54,8 +59,8 @@ public class XcalUtilTest extends TestCase {
     }
 
     for (final String val: baddates) {
-      assertNull("Expected null for val " + val,
-                 XcalUtil.getIcalFormatDateTime(val));
+      assertNull(XcalUtil.getIcalFormatDateTime(val),
+                 "Expected null for val " + val);
     }
   }
 }
