@@ -5,7 +5,11 @@ package org.bedework.util.calendar;
 
 import org.bedework.util.timezones.Timezones;
 
+import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.CalendarOutputter;
+import net.fortuna.ical4j.data.CalendarParserImpl;
+import net.fortuna.ical4j.data.ParserException;
+import net.fortuna.ical4j.data.UnfoldingReader;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
@@ -16,6 +20,7 @@ import net.fortuna.ical4j.model.property.Method;
 import net.fortuna.ical4j.model.property.ProdId;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.TreeSet;
@@ -46,6 +51,22 @@ public class IcalendarUtil {
     }
 
     return cal;
+  }
+
+  public static Calendar fromBuilder(final String val) {
+    final StringReader sr = new StringReader(val);
+
+    final CalendarBuilder bldr =
+            new CalendarBuilder(new CalendarParserImpl(),
+                                Timezones.getTzRegistry());
+
+    final UnfoldingReader ufrdr = new UnfoldingReader(sr, true);
+
+    try {
+      return bldr.build(ufrdr);
+    } catch (final IOException | ParserException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /** Create a Calendar object from the named timezone

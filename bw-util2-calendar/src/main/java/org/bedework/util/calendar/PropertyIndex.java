@@ -215,7 +215,7 @@ public class PropertyIndex implements Serializable {
   private static final boolean NOT_IMMUTABLE = false;
 
   /** */
-  public static enum ComponentInfoIndex {
+  public enum ComponentInfoIndex {
     /** */
     UNKNOWN_COMPONENT(null, null, null),
 
@@ -246,7 +246,7 @@ public class PropertyIndex implements Serializable {
 
     private String jname;
 
-    private final Class xmlClass;
+    private final Class<?> xmlClass;
 
     private final static Map<String, ComponentInfoIndex> pnameLookup =
             new HashMap<>();
@@ -254,7 +254,7 @@ public class PropertyIndex implements Serializable {
     private final static Map<QName, ComponentInfoIndex> qnameLookup =
             new HashMap<>();
 
-    private final static Map<Class, ComponentInfoIndex> xmlClassLookup =
+    private final static Map<Class<?>, ComponentInfoIndex> xmlClassLookup =
             new HashMap<>();
 
     static {
@@ -271,7 +271,7 @@ public class PropertyIndex implements Serializable {
 
     ComponentInfoIndex(final QName qname,
                        final String pname,
-                       final Class xmlClass) {
+                       final Class<?> xmlClass) {
       this.qname = qname;
       this.pname = pname;
       this.xmlClass = xmlClass;
@@ -280,9 +280,7 @@ public class PropertyIndex implements Serializable {
         pnameLC = pname.toLowerCase();
       }
 
-      if (jname == null) {
-        this.jname = pnameLC;
-      }
+      jname = pnameLC;
     }
 
     /** get the qname
@@ -321,7 +319,7 @@ public class PropertyIndex implements Serializable {
      *
      * @return class
      */
-    public Class getXmlClass() {
+    public Class<?> getXmlClass() {
       return xmlClass;
     }
 
@@ -329,7 +327,7 @@ public class PropertyIndex implements Serializable {
      * @param cl the class
      * @return ComponentInfoIndex
      */
-    public static ComponentInfoIndex fromXmlClass(final Class cl) {
+    public static ComponentInfoIndex fromXmlClass(final Class<?> cl) {
       return xmlClassLookup.get(cl);
     }
 
@@ -353,7 +351,7 @@ public class PropertyIndex implements Serializable {
   }
 
   /** */
-  public static enum DataType {
+  public enum DataType {
     /** */
     BINARY(XcalTags.binaryVal, "binary"),
 
@@ -427,7 +425,7 @@ public class PropertyIndex implements Serializable {
   }
 
   /** */
-  public static enum ParameterInfoIndex {
+  public enum ParameterInfoIndex {
     /** */
     UNKNOWN_PARAMETER(null),
 
@@ -652,7 +650,7 @@ public class PropertyIndex implements Serializable {
   }
 
   /** */
-  public static enum PropertyInfoIndex {
+  public enum PropertyInfoIndex {
     /** */
     UNKNOWN_PROPERTY(null, null,
                      IS_SINGLE, noComponent),
@@ -950,6 +948,51 @@ public class PropertyIndex implements Serializable {
           null,
           IS_MULTI, allComponents),
 
+    EXPECT_REPLY(BedeworkServerTags.xprop,
+          null,
+          IS_SINGLE, allComponents),
+
+    PARTICIPANT_TYPE(BedeworkServerTags.xprop,
+          null,
+          IS_SINGLE, allComponents),
+
+    PARTICIPATION_STATUS(BedeworkServerTags.xprop,
+          null,
+          IS_SINGLE, allComponents),
+
+    PARTICIPATION_DELEGATED_FROM(BedeworkServerTags.xprop,
+                                 null,
+                                 IS_SINGLE, allComponents),
+
+    PARTICIPATION_DELEGATED_TO(BedeworkServerTags.xprop,
+                               null,
+                               IS_SINGLE, allComponents),
+
+    MEMBER_OF(BedeworkServerTags.xprop,
+              null,
+              IS_SINGLE, allComponents),
+
+
+    SCHEDULING_SEQUENCE(BedeworkServerTags.xprop,
+                      null,
+                      IS_SINGLE, allComponents),
+
+    SCHEDULING_STATUS(BedeworkServerTags.xprop,
+          null,
+          IS_SINGLE, allComponents),
+
+    SCHEDULING_UPDATED(BedeworkServerTags.xprop,
+                     null,
+                     IS_SINGLE, allComponents),
+
+    SCHEDULING_FORCE_SEND(BedeworkServerTags.xprop,
+                     null,
+                     IS_SINGLE, allComponents),
+
+    KIND(BedeworkServerTags.xprop,
+          null,
+          IS_SINGLE, allComponents),
+
     /** accept-response */
     ACCEPT_RESPONSE(XcalTags.acceptResponse,
                     AcceptResponsePropType.class,
@@ -972,8 +1015,8 @@ public class PropertyIndex implements Serializable {
               null,
               IS_MULTI, vpollOnly),
 
-    /** participant component embedded in vpoll */
-    VVOTER(BedeworkServerTags.xprop,
+    /** participant component */
+    PARTICIPANT(BedeworkServerTags.xprop,
           null,
           IS_MULTI, vpollOnly),
 
@@ -981,6 +1024,11 @@ public class PropertyIndex implements Serializable {
     VOTE(BedeworkServerTags.xprop,
            null,
            IS_MULTI, vpollOnly),
+
+    /** Poll-completion */
+    POLL_COMPLETION(BedeworkServerTags.xprop,
+              null,
+        IS_SINGLE, vpollOnly),
 
     /** Poll-mode */
     POLL_MODE(XcalTags.pollMode,
@@ -1101,7 +1149,7 @@ public class PropertyIndex implements Serializable {
                    XBedeworkCostPropType.class,
                    IS_SINGLE, event_Todo),
 
-    /** ----------------------------- Vcalendar properties ----------- */
+    /* ----------------------------- Vcalendar properties ----------- */
 
     /** Transparency */
     CALSCALE(XcalTags.calscale,
@@ -1532,7 +1580,7 @@ public class PropertyIndex implements Serializable {
 
     private final QName qname;
 
-    private final Class xmlClass;
+    private final Class<?> xmlClass;
 
     private DataType ptype;
 
@@ -1551,7 +1599,7 @@ public class PropertyIndex implements Serializable {
     private final static Map<QName, PropertyInfoIndex> qnameLookup =
             new HashMap<>();
 
-    private final static Map<Class, PropertyInfoIndex> xmlClassLookup =
+    private final static Map<Class<?>, PropertyInfoIndex> xmlClassLookup =
             new HashMap<>();
 
     static {
@@ -1563,7 +1611,7 @@ public class PropertyIndex implements Serializable {
     }
 
     PropertyInfoIndex(final QName qname,
-                      final Class xmlClass,
+                      final Class<?> xmlClass,
                       final boolean multiValued,
                       final ComponentFlags components) {
       this.qname = qname;
@@ -1574,7 +1622,7 @@ public class PropertyIndex implements Serializable {
     }
 
     PropertyInfoIndex(final QName qname,
-                      final Class xmlClass,
+                      final Class<?> xmlClass,
                       final DataType ptype,
                       final boolean multiValued,
                       final ComponentFlags components) {
@@ -1583,7 +1631,7 @@ public class PropertyIndex implements Serializable {
     }
 
     PropertyInfoIndex(final QName qname,
-                      final Class xmlClass,
+                      final Class<?> xmlClass,
                       final boolean multiValued,
                       final boolean dbMultiValued,
                       final ComponentFlags components) {
@@ -1594,7 +1642,7 @@ public class PropertyIndex implements Serializable {
     }
 
     PropertyInfoIndex(final QName qname,
-                      final Class xmlClass,
+                      final Class<?> xmlClass,
                       final DataType ptype,
                       final boolean multiValued,
                       final ComponentFlags components,
@@ -1640,7 +1688,7 @@ public class PropertyIndex implements Serializable {
      *
      * @return class
      */
-    public Class getXmlClass() {
+    public Class<?> getXmlClass() {
       return xmlClass;
     }
 
@@ -1768,7 +1816,7 @@ public class PropertyIndex implements Serializable {
      * @param cl - class
      * @return PropertyInfoIndex
      */
-    public static PropertyInfoIndex fromXmlClass(final Class cl) {
+    public static PropertyInfoIndex fromXmlClass(final Class<?> cl) {
       return xmlClassLookup.get(cl);
     }
 
