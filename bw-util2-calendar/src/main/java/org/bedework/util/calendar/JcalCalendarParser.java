@@ -150,6 +150,12 @@ public class JcalCalendarParser implements CalendarParser {
 
     /* Now components */
     processCalcomps(parser, handler);
+
+    try {
+      handler.endCalendar();
+    } catch (final Throwable t) {
+      throw new RuntimeException(t);
+    }
   }
 
   private void processProperties(final JsonParser parser,
