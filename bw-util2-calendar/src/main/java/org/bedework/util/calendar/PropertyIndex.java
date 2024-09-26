@@ -1010,6 +1010,12 @@ public class PropertyIndex implements Serializable {
                  DataType.INTEGER,
         IS_SINGLE, event_Todo_Journal_Freebusy),
 
+    /** Poll-item-id */
+    POLL_VOTE_RESPONSE(BedeworkServerTags.xprop,
+                 PollItemIdPropType.class,
+                 DataType.INTEGER,
+        IS_SINGLE, event_Todo_Journal_Freebusy),
+
     /** Poll-item */
     POLL_ITEM(BedeworkServerTags.xprop,
               null,
