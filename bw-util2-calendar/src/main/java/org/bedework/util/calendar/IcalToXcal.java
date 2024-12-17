@@ -131,11 +131,14 @@ import net.fortuna.ical4j.model.component.VToDo;
 import net.fortuna.ical4j.model.parameter.TzId;
 import net.fortuna.ical4j.model.parameter.Value;
 import net.fortuna.ical4j.model.property.Categories;
+import net.fortuna.ical4j.model.property.DateListProperty;
+import net.fortuna.ical4j.model.property.ExDate;
 import net.fortuna.ical4j.model.property.ExRule;
 import net.fortuna.ical4j.model.property.FreeBusy;
 import net.fortuna.ical4j.model.property.Geo;
 import net.fortuna.ical4j.model.property.PercentComplete;
 import net.fortuna.ical4j.model.property.Priority;
+import net.fortuna.ical4j.model.property.RDate;
 import net.fortuna.ical4j.model.property.RRule;
 import net.fortuna.ical4j.model.property.Repeat;
 import net.fortuna.ical4j.model.property.Resources;
@@ -143,9 +146,11 @@ import net.fortuna.ical4j.model.property.Sequence;
 import net.fortuna.ical4j.model.property.XProperty;
 
 import java.math.BigInteger;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.BiFunction;
 
 import javax.xml.bind.JAXBElement;
 
@@ -285,10 +290,11 @@ public class IcalToXcal {
    * @param comp xml base component
    * @param pattern pattern
    */
-  public static void processProperties(final PropertyList icprops,
-                                       final BaseComponentType comp,
-                                       final BaseComponentType pattern,
-                                       final boolean wrapXprops) {
+  public static void processProperties(
+          final PropertyList<Property> icprops,
+          final BaseComponentType comp,
+          final BaseComponentType pattern,
+          final boolean wrapXprops) {
     if ((icprops == null) || icprops.isEmpty()) {
       return;
     }
@@ -297,11 +303,9 @@ public class IcalToXcal {
     final List<JAXBElement<? extends BasePropertyType>> pl =
             comp.getProperties().getBasePropertyOrTzid();
 
-    for (final Object icprop : icprops) {
-      final Property prop = (Property)icprop;
-
+    for (final Property icprop: normalizeProps(icprops)) {
       final PropertyInfoIndex pii = PropertyInfoIndex
-              .fromName(prop.getName());
+              .fromName(icprop.getName());
 
       if ((pii != null) &&
               !emit(pattern, comp.getClass(), pii.getXmlClass())) {
@@ -309,12 +313,80 @@ public class IcalToXcal {
       }
 
       final JAXBElement<? extends BasePropertyType> xmlprop =
-              doProperty(prop, pii, wrapXprops);
+              doProperty(icprop, pii, wrapXprops);
 
       if (xmlprop != null) {
-        processParameters(prop.getParameters(), xmlprop.getValue());
+        processParameters(icprop.getParameters(), xmlprop.getValue());
         pl.add(xmlprop);
       }
+    }
+  }
+
+  static PropertyList<Property> normalizeProps(
+          final PropertyList<Property> props) {
+    final var resProps =
+            new PropertyList<>(props.size());
+
+    try {
+      for (final var prop: props) {
+        if (prop instanceof final ExDate exdt) {
+          resProps.addAll(
+                  normalizeDtProp(exdt,
+                                  IcalToXcal::newExDate));
+          continue;
+        }
+        if (prop instanceof final RDate rdt) {
+          resProps.addAll(
+                  normalizeDtProp(rdt,
+                                  IcalToXcal::newRDate));
+          continue;
+        }
+
+        resProps.add(prop);
+      }
+    } catch (final Throwable t) {
+      throw new RuntimeException(t);
+    }
+
+    return resProps;
+  }
+
+  static PropertyList<Property> normalizeDtProp(
+          final DateListProperty prop,
+          final BiFunction<ParameterList, Date, DateListProperty> dlSupplier) {
+    final var resProps = new PropertyList<>();
+    final var dates = prop.getDates();
+
+    if (dates.size() == 1) {
+      resProps.add(prop);
+      return resProps;
+    }
+
+    final var params = prop.getParameters();
+    for (final var date: dates) {
+      resProps.add(dlSupplier.apply(params, date));
+    }
+
+    return resProps;
+  }
+
+  public static DateListProperty newExDate(
+          final ParameterList pars,
+          final Date value) {
+    try {
+      return new ExDate(pars, value.toString());
+    } catch (final ParseException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static DateListProperty newRDate(
+          final ParameterList pars,
+          final Date value) {
+    try {
+      return new RDate(pars, value.toString());
+    } catch (final ParseException e) {
+      throw new RuntimeException(e);
     }
   }
 
