@@ -18,7 +18,7 @@
 */
 package org.bedework.util.calendar.diff;
 
-import org.bedework.util.misc.ToString;
+import org.bedework.base.ToString;
 import org.bedework.util.misc.Util;
 
 import ietf.params.xml.ns.icalendar_2.TextParameterType;

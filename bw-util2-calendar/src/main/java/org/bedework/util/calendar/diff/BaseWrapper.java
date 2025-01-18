@@ -21,7 +21,7 @@ package org.bedework.util.calendar.diff;
 import org.bedework.util.calendar.diff.XmlIcalCompare.Globals;
 import org.bedework.util.logging.BwLogger;
 import org.bedework.util.logging.Logged;
-import org.bedework.util.misc.ToString;
+import org.bedework.base.ToString;
 import org.bedework.util.xml.NsContext;
 
 import javax.xml.namespace.QName;
