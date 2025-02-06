@@ -7,7 +7,7 @@ It was split off from the bw-util project to avoid some circular dependency issu
 
 ## Requirements
 
-1. JDK 8
+1. JDK 17
 2. Maven 3
 
 ## Building Locally
@@ -81,3 +81,44 @@ For full details, see [Sonatype's documentation for using Maven to publish relea
 * Add a concept entity with a couple of methods and use it.
 * Add a do not use flag to locations
 * Add more information to message to identify property.
+
+#### 5.0.2
+* Next stage in removing the bw-xml module.
+  * icalendar schema moved into its own module
+  * Many modules updated to refer to it
+  * calws schema moved into caldav
+  * feature pack update to deploy calws wsdls into bedework-content
+* Fix handling of UNTIL element in recurrences when converting to/from xml
+* Cosmetic and use instanceof patterns
+* 
+#### 5.0.3
+* Update library versions
+
+#### 5.0.4
+* Update library versions
+* Update for new ical4j version
+
+#### 5.0.5
+* Update library versions
+* Add processing for exdate and fix exrule
+
+#### 5.0.6
+* Update library versions
+* New class to handle event participants.
+
+#### 5.0.7
+* Update library versions
+
+#### 5.0.8
+* Update library versions
+* Missing endCalendar call so no result.
+* New index value
+
+#### 5.0.9
+* Update library versions
+* Normalize the property list when converting from ical to xml. Unable to handle multivalued exdate and rdate so split them into a number of single valued properties.
+
+#### 5.0.10
+* Update library versions
+* Move response classes and ToString into bw-base module.
+* Pre-jakarta
