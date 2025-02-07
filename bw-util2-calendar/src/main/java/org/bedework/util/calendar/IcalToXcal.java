@@ -152,7 +152,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiFunction;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 
 /** Conversion to XML from ical4j
  * @author douglm

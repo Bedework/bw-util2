@@ -32,7 +32,7 @@ import org.oasis_open.docs.ws_calendar.ns.soap.ComponentSelectionType;
 import org.oasis_open.docs.ws_calendar.ns.soap.ComponentsSelectionType;
 import org.oasis_open.docs.ws_calendar.ns.soap.PropertiesSelectionType;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 /** This class wraps a component.

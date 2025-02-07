@@ -23,7 +23,7 @@ import org.bedework.util.misc.Util;
 
 import ietf.params.xml.ns.icalendar_2.TextParameterType;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 /** This class wraps a property.
