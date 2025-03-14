@@ -18,11 +18,10 @@
 */
 package org.bedework.util.calendar;
 
+import org.bedework.base.exc.BedeworkException;
 import org.bedework.util.xml.tagdefs.XcalTags;
 
-import ietf.params.xml.ns.icalendar_2.ArrayOfComponents;
 import ietf.params.xml.ns.icalendar_2.ArrayOfParameters;
-import ietf.params.xml.ns.icalendar_2.ArrayOfProperties;
 import ietf.params.xml.ns.icalendar_2.BaseComponentType;
 import ietf.params.xml.ns.icalendar_2.BaseParameterType;
 import ietf.params.xml.ns.icalendar_2.BasePropertyType;
@@ -40,6 +39,7 @@ import ietf.params.xml.ns.icalendar_2.VfreebusyType;
 import ietf.params.xml.ns.icalendar_2.VjournalType;
 import ietf.params.xml.ns.icalendar_2.VtimezoneType;
 import ietf.params.xml.ns.icalendar_2.VtodoType;
+import jakarta.xml.bind.JAXBElement;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.TimeZone;
 
@@ -50,7 +50,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jakarta.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
@@ -127,12 +126,12 @@ public class XcalUtil {
    * @param dt to be initialized
    * @param dtval date string
    * @param tzid timezone id
-   * @throws RuntimeException on bad date
+   * @throws BedeworkException on bad date
    */
   public static void initDt(final DateDatetimePropertyType dt,
                             final String dtval,
                             final String tzid) {
-    XMLGregorianCalendar xgc = fromDtval(dtval);
+    final XMLGregorianCalendar xgc = fromDtval(dtval);
 
     if (dtval.length() == 8) {
       dt.setDate(xgc);
@@ -145,7 +144,7 @@ public class XcalUtil {
       return;
     }
 
-    TzidParamType tz = new TzidParamType();
+    final TzidParamType tz = new TzidParamType();
     tz.setText(tzid);
 
     ArrayOfParameters aop = dt.getParameters();
@@ -156,8 +155,6 @@ public class XcalUtil {
     }
 
     aop.getBaseParameter().add(icalOf.createTzid(tz));
-
-    dt.setParameters(aop);
   }
 
   /** Initialize the recur property
@@ -166,7 +163,7 @@ public class XcalUtil {
    */
   public static void initUntilRecur(final UntilRecurType dt,
                                     final String dtval) {
-    XMLGregorianCalendar xgc = fromDtval(dtval);
+    final XMLGregorianCalendar xgc = fromDtval(dtval);
 
     if (dtval.length() == 8) {
       dt.setDate(xgc);
@@ -179,14 +176,14 @@ public class XcalUtil {
   /**
    * @param dtval to convert
    * @return XMLGregorianCalendar
-   * @throws RuntimeException on bad date or new instance failure
+   * @throws BedeworkException on bad date or new instance failure
    */
   public static XMLGregorianCalendar fromDtval(final String dtval) {
     final DatatypeFactory dtf;
     try {
       dtf = DatatypeFactory.newInstance();
-    } catch (DatatypeConfigurationException dce) {
-      throw new RuntimeException(dce);
+    } catch (final DatatypeConfigurationException dce) {
+      throw new BedeworkException(dce);
     }
 
     return dtf.newXMLGregorianCalendar(getXmlFormatDateTime(dtval));
@@ -200,8 +197,8 @@ public class XcalUtil {
     final DatatypeFactory dtf;
     try {
       dtf = DatatypeFactory.newInstance();
-    } catch (DatatypeConfigurationException dce) {
-      throw new RuntimeException(dce);
+    } catch (final DatatypeConfigurationException dce) {
+      throw new BedeworkException(dce);
     }
 
     return dtf.newDuration(dur);
@@ -215,8 +212,8 @@ public class XcalUtil {
     final DatatypeFactory dtf;
     try {
       dtf = DatatypeFactory.newInstance();
-    } catch (DatatypeConfigurationException dce) {
-      throw new RuntimeException(dce);
+    } catch (final DatatypeConfigurationException dce) {
+      throw new BedeworkException(dce);
     }
 
     return dtf.newXMLGregorianCalendar(getXmlFormatDateTime(dtval));
@@ -243,7 +240,7 @@ public class XcalUtil {
      * @return A timezone or null if non found
      * @throws Throwable on fatal error
      */
-    TimeZone getTz(final String id) throws Throwable;
+    TimeZone getTz(String id) throws Throwable;
   }
 
   /** For date only values and floating convert to local UTC. For UTC just return
@@ -255,7 +252,7 @@ public class XcalUtil {
    */
   public static String getUTC(final DateDatetimePropertyType dt,
                               final TzGetter tzs) {
-    DtTzid dtz = getDtTzid(dt);
+    final var dtz = getDtTzid(dt);
 
     if ((dtz.dt.length() == 18) && (dtz.dt.charAt(17) == 'Z')) {
       return dtz.dt;
@@ -267,13 +264,13 @@ public class XcalUtil {
         tz = tzs.getTz(dtz.tzid);
       }
 
-      DateTime dtim = new DateTime(dtz.dt, tz);
+      final DateTime dtim = new DateTime(dtz.dt, tz);
 
       dtim.setUtc(true);
 
       return dtim.toString();
     } catch (final Throwable t) {
-      throw new RuntimeException(t);
+      throw new BedeworkException(t);
     }
   }
 
@@ -282,12 +279,12 @@ public class XcalUtil {
    * @return DtTzid filled in
    */
   public static DtTzid getDtTzid(final DateDatetimePropertyType dt) {
-    DtTzid res = new DtTzid();
+    final var res = new DtTzid();
 
-    ArrayOfParameters aop = dt.getParameters();
+    final ArrayOfParameters aop = dt.getParameters();
 
     if (aop != null) {
-      for (JAXBElement<? extends BaseParameterType> e: aop.getBaseParameter()) {
+      for (final var e: aop.getBaseParameter()) {
         if (e.getName().equals(XcalTags.tzid)) {
           res.tzid = ((TzidParamType)e.getValue()).getText();
           break;
@@ -316,24 +313,19 @@ public class XcalUtil {
     }
 
     if (val.length() < 8) {
-      throw new RuntimeException("Bad date: " + val);
+      throw new BedeworkException("Bad date: " + val);
     }
 
     final StringBuilder sb = new StringBuilder();
 
-    sb.append(val, 0, 4);
-    sb.append("-");
-    sb.append(val, 4, 6);
-    sb.append("-");
-    sb.append(val, 6, 8);
+    sb.append(val, 0, 4)
+      .append("-").append(val, 4, 6)
+      .append("-").append(val, 6, 8);
 
     if (val.length() > 8) {
-      sb.append("T");
-      sb.append(val, 9, 11);
-      sb.append(":");
-      sb.append(val, 11, 13);
-      sb.append(":");
-      sb.append(val.substring(13));
+      sb.append("T").append(val, 9, 11)
+        .append(":").append(val, 11, 13)
+        .append(":").append(val.substring(13));
     }
 
     return sb.toString();
@@ -378,7 +370,7 @@ public class XcalUtil {
         // Already ical?
         final String g3 = m.group(3);
 
-        if ((g3 != null) && (g3.length() > 0)) {
+        if ((g3 != null) && (!g3.isEmpty())) {
           return null; // trailing junk
         }
 
@@ -393,21 +385,20 @@ public class XcalUtil {
 
     final String g3 = m.group(3);
 
-    if ((g3 != null) && (g3.length() > 0)) {
+    if ((g3 != null) && (!g3.isEmpty())) {
       return null; // trailing junk
     }
 
-    StringBuilder sb = new StringBuilder();
-
-    sb.append(dt, 0, 4);
-    sb.append(dt, 5, 7);
-    sb.append(dt, 8, 10);
+    final StringBuilder sb = new StringBuilder()
+            .append(dt, 0, 4)
+            .append(dt, 5, 7)
+            .append(dt, 8, 10);
 
     if (dt.length() > 10) {
-      sb.append("T");
-      sb.append(dt, 11, 13);
-      sb.append(dt, 14, 16);
-      sb.append(dt, 17, 19);
+      sb.append("T")
+        .append(dt, 11, 13)
+        .append(dt, 14, 16)
+        .append(dt, 17, 19);
 
       if (dt.endsWith("Z")) {
         sb.append("Z");
@@ -489,13 +480,13 @@ public class XcalUtil {
   /**
    * @param val to clone
    * @return cloned empty component
-   * @throws RuntimeException for illegal access exception
+   * @throws BedeworkException for illegal access exception
    */
   public static BaseComponentType cloneComponent(final BaseComponentType val) {
     try {
       return val.getClass().newInstance();
     } catch (final Throwable t) {
-      throw new RuntimeException(t);
+      throw new BedeworkException(t);
     }
   }
 
@@ -507,7 +498,7 @@ public class XcalUtil {
     try {
       return val.getClass().newInstance();
     } catch (final Throwable t) {
-      throw new RuntimeException(t);
+      throw new BedeworkException(t);
     }
   }
 
@@ -519,7 +510,7 @@ public class XcalUtil {
     try {
       return val.getClass().newInstance();
     } catch (final Throwable t) {
-      throw new RuntimeException(t);
+      throw new BedeworkException(t);
     }
   }
 
@@ -530,12 +521,12 @@ public class XcalUtil {
    */
   public static BaseComponentType findComponent(final IcalendarType ical,
                                                 final QName name) {
-    for (VcalendarType v: ical.getVcalendar()) {
+    for (final var v: ical.getVcalendar()) {
       if (name.equals(XcalTags.vcalendar)) {
         return v;
       }
 
-      BaseComponentType bc = findComponent(v, name);
+      final var bc = findComponent(v, name);
       if (bc != null) {
         return bc;
       }
@@ -564,17 +555,17 @@ public class XcalUtil {
    */
   public static BaseComponentType findComponent(final BaseComponentType bcPar,
                                                 final QName name) {
-    List<JAXBElement<? extends BaseComponentType>> cs = getComponents(bcPar);
+    final var cs = getComponents(bcPar);
     if (cs == null) {
       return null;
     }
 
-    for (JAXBElement<? extends BaseComponentType> bcel: cs) {
+    for (final var bcel: cs) {
       if (bcel.getName().equals(name)) {
         return bcel.getValue();
       }
 
-      BaseComponentType bc = findComponent(bcel.getValue(), name);
+      final var bc = findComponent(bcel.getValue(), name);
       if (bc != null) {
         return bc;
       }
@@ -592,13 +583,13 @@ public class XcalUtil {
       return null;
     }
 
-    for (VcalendarType v: ical.getVcalendar()) {
-      ArrayOfComponents cs = v.getComponents();
+    for (final var v: ical.getVcalendar()) {
+      final var cs = v.getComponents();
       if (cs == null) {
         continue;
       }
 
-      for (JAXBElement<? extends BaseComponentType> bcel: cs.getBaseComponent()) {
+      for (final var bcel: cs.getBaseComponent()) {
         return bcel.getValue();
       }
     }
@@ -618,12 +609,12 @@ public class XcalUtil {
       return null;
     }
 
-    ArrayOfProperties ps = bcPar.getProperties();
+    final var ps = bcPar.getProperties();
     if (ps == null) {
       return null;
     }
 
-    for (JAXBElement<? extends BasePropertyType> bpel: ps.getBasePropertyOrTzid()) {
+    for (final var bpel: ps.getBasePropertyOrTzid()) {
       if (bpel.getName().equals(name)) {
         return bpel.getValue();
       }
@@ -644,12 +635,12 @@ public class XcalUtil {
       return null;
     }
 
-    ArrayOfParameters ps = prop.getParameters();
+    final var ps = prop.getParameters();
     if (ps == null) {
       return null;
     }
 
-    for (JAXBElement<? extends BaseParameterType> bpel: ps.getBaseParameter()) {
+    for (final var bpel: ps.getBaseParameter()) {
       if (bpel.getName().equals(name)) {
         return bpel.getValue();
       }

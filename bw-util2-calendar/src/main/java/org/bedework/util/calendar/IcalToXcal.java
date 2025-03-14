@@ -18,6 +18,7 @@
 */
 package org.bedework.util.calendar;
 
+import org.bedework.base.exc.BedeworkException;
 import org.bedework.util.calendar.PropertyIndex.ParameterInfoIndex;
 import org.bedework.util.calendar.PropertyIndex.PropertyInfoIndex;
 import org.bedework.util.misc.Util;
@@ -105,6 +106,7 @@ import ietf.params.xml.ns.icalendar_2.XBedeworkWrapperPropType;
 import ietf.params.xml.ns.icalendar_2.XBwCategoriesPropType;
 import ietf.params.xml.ns.icalendar_2.XBwContactPropType;
 import ietf.params.xml.ns.icalendar_2.XBwLocationPropType;
+import jakarta.xml.bind.JAXBElement;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentList;
@@ -148,11 +150,8 @@ import net.fortuna.ical4j.model.property.XProperty;
 import java.math.BigInteger;
 import java.text.ParseException;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiFunction;
-
-import jakarta.xml.bind.JAXBElement;
 
 /** Conversion to XML from ical4j
  * @author douglm
@@ -228,7 +227,7 @@ public class IcalToXcal {
       return null;
     }
 
-    final PropertyList icprops = val.getProperties();
+    final PropertyList<Property> icprops = val.getProperties();
     ComponentList<? extends Component> icComps = null;
 
     if (icprops == null) {
@@ -238,28 +237,31 @@ public class IcalToXcal {
 
     final JAXBElement<? extends BaseComponentType> el;
 
-    if (val instanceof VEvent) {
-      el = of.createVevent(new VeventType());
-      icComps = ((VEvent)val).getAlarms();
-    } else if (val instanceof VToDo) {
-      el = of.createVtodo(new VtodoType());
-      icComps = ((VToDo)val).getAlarms();
-    } else if (val instanceof VJournal) {
-      el = of.createVjournal(new VjournalType());
-    } else if (val instanceof VFreeBusy) {
-      el = of.createVfreebusy(new VfreebusyType());
-    } else if (val instanceof VAlarm) {
-      el = of.createValarm(new ValarmType());
-    } else if (val instanceof VTimeZone) {
-      el = of.createVtimezone(new VtimezoneType());
-      icComps = ((VTimeZone)val).getObservances();
-    } else if (val instanceof Daylight) {
-      el = of.createDaylight(new DaylightType());
-    } else if (val instanceof Standard) {
-      el = of.createStandard(new StandardType());
-    } else {
-      throw new RuntimeException("org.bedework.invalid.entity.type" +
-          val.getClass().getName());
+    switch (val) {
+      case final VEvent vEvent -> {
+        el = of.createVevent(new VeventType());
+        icComps = vEvent.getAlarms();
+      }
+      case final VToDo vToDo -> {
+        el = of.createVtodo(new VtodoType());
+        icComps = vToDo.getAlarms();
+      }
+      case final VJournal vJournal ->
+              el = of.createVjournal(new VjournalType());
+      case final VFreeBusy vFreeBusy ->
+              el = of.createVfreebusy(new VfreebusyType());
+      case final VAlarm vAlarm -> el = of.createValarm(new ValarmType());
+      case final VTimeZone vTimeZone -> {
+        el = of.createVtimezone(new VtimezoneType());
+        icComps = vTimeZone.getObservances();
+      }
+      case final Daylight daylight ->
+              el = of.createDaylight(new DaylightType());
+      case final Standard standard ->
+              el = of.createStandard(new StandardType());
+      default -> throw new BedeworkException(
+              "org.bedework.invalid.entity.type" +
+                      val.getClass().getName());
     }
 
     final BaseComponentType comp = el.getValue();
@@ -312,7 +314,7 @@ public class IcalToXcal {
         continue;
       }
 
-      final JAXBElement<? extends BasePropertyType> xmlprop =
+      final var xmlprop =
               doProperty(icprop, pii, wrapXprops);
 
       if (xmlprop != null) {
@@ -345,7 +347,7 @@ public class IcalToXcal {
         resProps.add(prop);
       }
     } catch (final Throwable t) {
-      throw new RuntimeException(t);
+      throw new BedeworkException(t);
     }
 
     return resProps;
@@ -376,7 +378,7 @@ public class IcalToXcal {
     try {
       return new ExDate(pars, value.toString());
     } catch (final ParseException e) {
-      throw new RuntimeException(e);
+      throw new BedeworkException(e);
     }
   }
 
@@ -386,7 +388,7 @@ public class IcalToXcal {
     try {
       return new RDate(pars, value.toString());
     } catch (final ParseException e) {
-      throw new RuntimeException(e);
+      throw new BedeworkException(e);
     }
   }
 
@@ -449,9 +451,8 @@ public class IcalToXcal {
         final CategoriesPropType c = new CategoriesPropType();
         final TextList cats = ((Categories)prop).getCategories();
 
-        final Iterator<String> pit = cats.iterator();
-        while (pit.hasNext()) {
-          c.getText().add(pit.next());
+        for (final String cat: cats) {
+          c.getText().add(cat);
         }
 
         return of.createCategories(c);
@@ -580,12 +581,11 @@ public class IcalToXcal {
 
         final List<PeriodType> pdl =  fb.getPeriod();
 
-        for (final Object o: fbps) {
-          final Period p = (Period)o;
+        for (final Period o: fbps) {
           final PeriodType np = new PeriodType();
 
-          np.setStart(XcalUtil.getXMlUTCCal(p.getStart().toString()));
-          np.setEnd(XcalUtil.getXMlUTCCal(p.getEnd().toString()));
+          np.setStart(XcalUtil.getXMlUTCCal(o.getStart().toString()));
+          np.setEnd(XcalUtil.getXMlUTCCal(o.getEnd().toString()));
           pdl.add(np);
         }
 
@@ -731,9 +731,8 @@ public class IcalToXcal {
         final List<String> rl = r.getText();
         final TextList rlist = ((Resources)prop).getResources();
 
-        final Iterator<String> rlit = rlist.iterator();
-        while (rlit.hasNext()) {
-          rl.add(rlit.next());
+        for (final String string: rlist) {
+          rl.add(string);
         }
 
         return of.createResources(r);
@@ -903,27 +902,24 @@ public class IcalToXcal {
       return;
     }
 
-    final Iterator<Parameter> it = icparams.iterator();
-
-    while (it.hasNext()) {
-      final Parameter param = it.next();
-
-      final ParameterInfoIndex pii =
+    for (final Parameter param: icparams) {
+      final var pii =
               ParameterInfoIndex.lookupPname(param.getName());
 
       if (pii == null) {
         continue;
       }
 
-      final JAXBElement<? extends BaseParameterType> xmlprop =
-          doParameter(param, pii);
+      final var xmlprop = doParameter(param, pii);
 
       if (xmlprop != null) {
         if (prop.getParameters() == null) {
           prop.setParameters(new ArrayOfParameters());
         }
 
-        prop.getParameters().getBaseParameter().add(xmlprop);
+        prop.getParameters()
+            .getBaseParameter()
+            .add(xmlprop);
       }
     }
   }
@@ -1070,8 +1066,8 @@ public class IcalToXcal {
     if (r.getDayList() != null) {
       final List<String> l = rt.getByday();
 
-      for (final Object o: r.getDayList()) {
-        l.add(((WeekDay)o).getDay().name());
+      for (final WeekDay o: r.getDayList()) {
+        l.add(o.getDay().name());
       }
     }
 
@@ -1125,7 +1121,7 @@ public class IcalToXcal {
   }
 
   private static String getTzid(final Property p) {
-    final TzId tzidParam = (TzId)p.getParameter(Parameter.TZID);
+    final TzId tzidParam = p.getParameter(Parameter.TZID);
 
     if (tzidParam == null) {
       return null;
@@ -1135,13 +1131,15 @@ public class IcalToXcal {
   }
 
   private static boolean dateOnly(final Property p) {
-    final Value valParam = (Value)p.getParameter(Parameter.VALUE);
+    final Value valParam = p.getParameter(Parameter.VALUE);
 
     if ((valParam == null) || (valParam.getValue() == null)) {
       return false;
     }
 
-    return valParam.getValue().toUpperCase().equals(Value.DATE);
+    return valParam.getValue()
+                   .toUpperCase()
+                   .equals(Value.DATE.getValue());
   }
 
   private static String paramVal(final Property p,
