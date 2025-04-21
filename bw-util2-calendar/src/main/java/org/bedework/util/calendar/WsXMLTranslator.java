@@ -54,6 +54,7 @@ import ietf.params.xml.ns.icalendar_2.UriPropertyType;
 import ietf.params.xml.ns.icalendar_2.UtcDatetimePropertyType;
 import ietf.params.xml.ns.icalendar_2.UtcOffsetPropertyType;
 import ietf.params.xml.ns.icalendar_2.VcalendarType;
+import jakarta.xml.bind.JAXBElement;
 import net.fortuna.ical4j.data.ContentHandler;
 import net.fortuna.ical4j.data.DefaultContentHandler;
 import net.fortuna.ical4j.model.Calendar;
@@ -66,7 +67,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 /** Convert to/from Web Services style XML. On input this has been parsed by the
@@ -272,7 +272,7 @@ public class WsXMLTranslator implements Consumer<Calendar> {
    * @param rp recurrence property
    * @return iCalendar recurrence rule value
    */
-  public String fromRecurProperty(final RecurPropertyType rp) {
+  public static String fromRecurProperty(final RecurPropertyType rp) {
     final RecurType r = rp.getRecur();
 
     final List<String> rels = new ArrayList<>();
@@ -481,7 +481,9 @@ public class WsXMLTranslator implements Consumer<Calendar> {
     return false;
   }
 
-  private void addRecurEl(final List<String> l, final String name, final Object o) {
+  private static void addRecurEl(final List<String> l,
+                                 final String name,
+                                 final Object o) {
     if (o == null) {
       return;
     }
@@ -540,13 +542,14 @@ public class WsXMLTranslator implements Consumer<Calendar> {
     throw new RuntimeException("Unsupported param type");
   }
 
-  private String fromList(final List<?> l, final boolean quote) {
+  private static String fromList(final List<?> l,
+                                 final boolean quote) {
     return fromList(l, quote, ",");
   }
 
-  private String fromList(final List<?> l,
-                          final boolean quote,
-                          final String delimChar) {
+  private static String fromList(final List<?> l,
+                                 final boolean quote,
+                                 final String delimChar) {
     if ((l == null) || l.isEmpty()) {
       return null;
     }
