@@ -1,0 +1,4 @@
+[[calendar]]
+== Util-calendar
+Provides generic utility classes for indexing in services such as opensearch.
+
