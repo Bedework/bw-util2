@@ -1055,6 +1055,11 @@ public class PropertyIndex implements Serializable {
     /* -------------- Non-ical ---------------- */
 
     /** non ical */
+    ARCHIVED(BedeworkServerTags.xprop,
+            null,
+            IS_SINGLE, event_Todo),
+
+    /** non ical */
     COLLECTION(BedeworkServerTags.collection,
                null,
                IS_SINGLE, event_Todo_Journal),
